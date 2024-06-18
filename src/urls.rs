@@ -15,29 +15,8 @@ pub fn get_request_parameters(request_line: String) -> (String, String) {
 }
 
 pub fn get_response(request_type: &str, uri: &str) -> String {
-    // let (status_line, template_name) = match uri {
-    //     "/" => home_page(request_type),
-    //     "/sleep" => sleep_page(request_type),
-    //     // "/js/"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //     _ => four_oh_four(request_type)
-    // };
-
-    let status_line: String;
-    let template_name: String;
+    let mut status_line: String;
+    let mut template_name: String;
 
     if uri == "/" {
         (status_line, template_name) = home_page(request_type)
@@ -49,14 +28,20 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
         (status_line, template_name) = four_oh_four(request_type)
     }
 
+    let contents_result = fs::read_to_string(template_name);
+    let contents;
 
+    match contents_result {
+        Ok(file) => contents = file,
+        Err(error) => {
+            (status_line, template_name) = four_oh_four(request_type);
+            contents = fs::read_to_string(template_name).unwrap();
+            println!("{error:?}");
+            println!("{uri:?}");
+        }
+    }
 
-
-
-
-    let contents: String = fs::read_to_string(template_name).unwrap();
     let length: usize = contents.len();
-
     format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}")
 }
 
@@ -90,6 +75,8 @@ fn static_file(request_type: &str, uri: &str) -> (String, String) {
     let len: usize = uri.len();
     let path_to_check = &uri[1..len];
     let file_exists: bool = Path::new(path_to_check).exists();
+
+    println!("File exists: {file_exists:?}");
 
     if file_exists {
         let status_line: String = "HTTP/1.1 200 OK".to_string();
