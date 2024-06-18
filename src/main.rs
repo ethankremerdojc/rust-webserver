@@ -21,8 +21,6 @@ fn main() {
     }
 }
 
-
-
 fn handle_connection(mut stream: TcpStream) {
     let buf_reader: BufReader<&mut TcpStream> = BufReader::new(&mut stream);
     let request_line: String = buf_reader.lines().next().unwrap().unwrap();
