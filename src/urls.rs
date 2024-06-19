@@ -14,6 +14,7 @@ pub fn get_request_parameters(request_line: String) -> (String, String) {
 }
 
 pub fn get_response(request_type: &str, uri: &str) -> String {
+    
     let mut status_line: String;
     let mut template_name: String;
 
@@ -29,6 +30,10 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
         (status_line, template_name) = four_oh_four(request_type)
     }
 
+    get_template_response(status_line, template_name, uri, request_type)
+}
+
+fn get_template_response(mut status_line: String, mut template_name: String, uri: &str, request_type: &str) -> String {
     let contents_result: Result<String, std::io::Error> = fs::read_to_string(template_name);
     let contents;
 
