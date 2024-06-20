@@ -48,7 +48,7 @@ fn get_template_response(mut status_line: String, mut template_name: String, uri
     }
 
     let length: usize = contents.len();
-    format!("{status_line}\r\nContent-Length: {length}\r\n\r\n{contents}")
+    format!("{status_line}\r\nContent-Length: {length}\r\nContent-Type: text/html\r\n\r\n{contents}")
 }
 
 fn home(request_type: &str) -> (String, String) {
