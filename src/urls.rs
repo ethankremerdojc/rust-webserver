@@ -18,8 +18,6 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
     let mut status_line: String;
     let mut template_name: String;
 
-    let mut is_html: bool = true;
-
     if uri == "/" {
         (status_line, template_name) = home(request_type)
     } else if uri == "/sleep" {
@@ -28,7 +26,6 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
         (status_line, template_name) = game(request_type)
     } else if uri.starts_with("/static/") {
         (status_line, template_name) = static_file(request_type, uri)
-        is_html = false;
     } else {
         (status_line, template_name) = four_oh_four(request_type)
     }
