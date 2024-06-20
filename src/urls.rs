@@ -52,6 +52,9 @@ fn get_template_response(mut status_line: String, mut template_name: String, uri
 
     let content_type;
 
+    //todo set up a real fn to deal with this. All types found here:
+    // https://stackoverflow.com/questions/23714383/what-are-all-the-possible-values-for-http-content-type-header
+
     if template_name_sub.ends_with(".html") {
         content_type = "text/html";
     } else if template_name_sub.ends_with(".css") {
