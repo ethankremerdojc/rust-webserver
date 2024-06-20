@@ -18,6 +18,8 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
     let mut status_line: String;
     let mut template_name: String;
 
+    let mut is_html: bool = true;
+
     if uri == "/" {
         (status_line, template_name) = home(request_type)
     } else if uri == "/sleep" {
@@ -26,6 +28,7 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
         (status_line, template_name) = game(request_type)
     } else if uri.starts_with("/static/") {
         (status_line, template_name) = static_file(request_type, uri)
+        is_html = false;
     } else {
         (status_line, template_name) = four_oh_four(request_type)
     }
@@ -34,21 +37,36 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
 }
 
 fn get_template_response(mut status_line: String, mut template_name: String, uri: &str, request_type: &str) -> String {
-    let contents_result: Result<String, std::io::Error> = fs::read_to_string(template_name);
+    let contents_result: Result<String, std::io::Error> = fs::read_to_string(&template_name);
     let contents;
+
+    let template_name_sub = &template_name;
 
     match contents_result {
         Ok(file) => contents = file,
         Err(error) => {
-            (status_line, template_name) = four_oh_four(request_type);
-            contents = fs::read_to_string(template_name).unwrap();
+            (status_line, _) = four_oh_four(request_type);
+            contents = fs::read_to_string(template_name_sub).unwrap();
             println!("{error:?}");
             println!("{uri:?}");
         }
     }
 
+
+    let content_type;
+
+    if template_name_sub.ends_with(".html") {
+        content_type = "text/html";
+    } else if template_name_sub.ends_with(".css") {
+        content_type = "text/css"
+    } else if template_name_sub.ends_with(".js") {
+        content_type = "text/javascript"
+    } else {
+        content_type = "text/plain"
+    }
+
     let length: usize = contents.len();
-    format!("{status_line}\r\nContent-Length: {length}\r\nContent-Type: text/html\r\n\r\n{contents}")
+    format!("{status_line}\r\nContent-Length: {length}\r\nContent-Type: {content_type}\r\n\r\n{contents}")
 }
 
 fn home(request_type: &str) -> (String, String) {
