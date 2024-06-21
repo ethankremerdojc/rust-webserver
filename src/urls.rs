@@ -14,7 +14,6 @@ pub fn get_request_parameters(request_line: String) -> (String, String) {
 }
 
 pub fn get_response(request_type: &str, uri: &str) -> String {
-    
     let status_line: String;
     let template_name: String;
 
@@ -33,6 +32,24 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
     get_file_response(status_line, template_name, uri, request_type)
 }
 
+fn get_content_type(template_name_sub: &String) -> &str {
+    // https://stackoverflow.com/questions/23714383/what-are-all-the-possible-values-for-http-content-type-header
+
+    let content_type: &str;
+
+    if template_name_sub.ends_with(".html") {
+        content_type = "text/html";
+    } else if template_name_sub.ends_with(".css") {
+        content_type = "text/css"
+    } else if template_name_sub.ends_with(".js") {
+        content_type = "text/javascript"
+    } else {
+        content_type = "text/plain"
+    }
+
+    content_type
+}
+
 fn get_file_response(mut status_line: String, template_name: String, uri: &str, request_type: &str) -> String {
     let contents_result: Result<String, std::io::Error> = fs::read_to_string(&template_name);
     let contents;
@@ -49,21 +66,7 @@ fn get_file_response(mut status_line: String, template_name: String, uri: &str, 
         }
     }
 
-    let content_type;
-
-    //todo set up a real fn to deal with this. All types found here:
-    // https://stackoverflow.com/questions/23714383/what-are-all-the-possible-values-for-http-content-type-header
-
-    if template_name_sub.ends_with(".html") {
-        content_type = "text/html";
-    } else if template_name_sub.ends_with(".css") {
-        content_type = "text/css"
-    } else if template_name_sub.ends_with(".js") {
-        content_type = "text/javascript"
-    } else {
-        content_type = "text/plain"
-    }
-
+    let content_type = get_content_type(template_name_sub);
     let length: usize = contents.len();
     format!("{status_line}\r\nContent-Length: {length}\r\nContent-Type: {content_type}\r\n\r\n{contents}")
 }

@@ -1,24 +1,30 @@
 use rust_webserver::ThreadPool;
 use urls::get_response;
 
+
 use std::{
     io::{prelude::*, BufReader},
     net::{TcpListener, TcpStream},
 };
 
 mod urls;
+mod game;
+
 
 fn main() {
-    let listener: TcpListener = TcpListener::bind("0.0.0.0:7878").unwrap();
-    let pool: ThreadPool = ThreadPool::new(4);
 
-    for stream in listener.incoming() {
-        let stream: TcpStream = stream.unwrap();
+    game::base_case();
 
-        pool.execute(|| {
-            handle_connection(stream);
-        });
-    }
+    // let listener: TcpListener = TcpListener::bind("0.0.0.0:7878").unwrap();
+    // let pool: ThreadPool = ThreadPool::new(4);
+
+    // for stream in listener.incoming() {
+    //     let stream: TcpStream = stream.unwrap();
+
+    //     pool.execute(|| {
+    //         handle_connection(stream);
+    //     });
+    // }
 }
 
 fn handle_connection(mut stream: TcpStream) {
