@@ -1,7 +1,7 @@
 const MAP_WIDTH: usize = 20;
 const MAP_HEIGHT: usize = 20;
 
-const SEED: u32 = 98; // 38
+const SEED: u32 = 71; // 38
 const MAX_SEED_SIZE: u32 = 33391; //33391; // all 3 of below are primes
 const MULT_NUM: u32 = 3803; //3803;
 const ADD_NUM: u32 = 7499; //7499;
@@ -52,7 +52,7 @@ impl Map {
 
     fn gen_rocks(&mut self) {
         let total_cell_count = self.get_total_cell_count();
-        let max_rocks = total_cell_count / 5;
+        let max_rocks = total_cell_count / 9;
 
         for _ in 0..max_rocks {
             self.mutate_seed();
@@ -72,7 +72,7 @@ impl Map {
         // adjust this function at some point to generate clump of trees instead of singular trees
 
         let total_cell_count = self.get_total_cell_count();
-        let max_trees = total_cell_count / 2;
+        let max_trees = total_cell_count / 4;
         for _ in 0..max_trees {
 
             self.mutate_seed();
@@ -89,24 +89,24 @@ impl Map {
     }
 
     fn gen_water_sources(&mut self) {
-        // self.gen_rivers();
+        self.gen_rivers();
         self.gen_lakes();
     }
 
     fn gen_lakes(&mut self) {
         let total_cell_count = self.get_total_cell_count();
-        let max_trees = total_cell_count / 12;
+        let max_lakes = total_cell_count / 30;
 
-        for _ in 0..max_trees {
+        for _ in 0..max_lakes {
 
             self.mutate_seed();
             
-            if self.seed_state % 4 == 0 {
+            if self.seed_state % 3 == 0 {
                 let (xp, yp) = self.rand_position();    
                 let xpos: i32 = xp as i32;
                 let ypos: i32 = yp as i32;
                 
-                let max_spread:usize = 6; // Each cell has 8 neighbors
+                let max_spread:usize = 7; // Each cell has 8 neighbors
 
                 let mut positions: Vec<(usize, usize)> = Vec::new();
 
@@ -114,8 +114,6 @@ impl Map {
 
                 for _ in 0..max_spread {
                     self.mutate_seed();
-
-                    // x and y can be + (-1), +0 +1
                     for x in -1..2 {
                         for y in -1..2 {
 
@@ -146,13 +144,97 @@ impl Map {
 
                 for position in positions {
                     let (col, row) = position;
-                    self.gen_lake(col, row);
+                    self.gen_water(col, row);
                 }
             }
         }
     }
 
-    fn gen_lake(&mut self, col: usize, row: usize) {
+    fn gen_rivers(&mut self) {
+        let total_cell_count = self.get_total_cell_count();
+        let max_rivers = total_cell_count / 50;
+        let max_river_length = total_cell_count / 36;
+
+        for _ in 0..max_rivers {
+            self.mutate_seed();
+
+            let xpos: i32;
+            let ypos: i32;
+
+            // below statement forces river to spawn from edge of map
+            if self.seed_state % 2 == 0 {
+                self.mutate_seed();
+                xpos = (self.seed_state % (MAP_WIDTH as u32)) as i32;
+                
+                if self.seed_state % 2 == 0 {
+                    ypos = 0;
+                } else {
+                    ypos = (MAP_HEIGHT - 1) as i32;
+                }
+            } else {
+                self.mutate_seed();
+                ypos = (self.seed_state % (MAP_HEIGHT as u32)) as i32;
+                
+                if self.seed_state % 2 == 0 {
+                    xpos = 0;
+                } else {
+                    xpos = (MAP_WIDTH - 1) as i32;
+                }
+            }
+
+            let mut temp_x = xpos;
+            let mut temp_y = ypos;
+
+            let mut positions: Vec<(usize, usize)> = Vec::new();
+            positions.push((temp_x as usize, temp_y as usize));
+
+            for _ in 0..max_river_length {
+                self.mutate_seed();
+                let modx = self.seed_state % 3;
+                let xdif: i32;
+                match modx {
+                    0 => xdif = -1,
+                    1 => xdif = 0,
+                    2 => xdif = 1,
+                    _ => {panic!()}
+                }
+
+                self.mutate_seed();
+                let mody = self.seed_state % 3;
+                let ydif: i32;
+
+                match mody {
+                    0 => ydif = -1,
+                    1 => ydif = 0,
+                    2 => ydif = 1,
+                    _ => {panic!()}
+                }
+
+                if xdif == -1 && ydif == -1 {continue}
+                if xdif == 1 && ydif == 1 {continue}
+                if xdif == -1 && temp_x == 0 {continue}
+                if xdif == 1 && temp_x == (MAP_WIDTH - 1) as i32 {continue}
+                if ydif == -1 && temp_y == 0 {continue}
+                if ydif == 1 && temp_y == (MAP_HEIGHT - 1) as i32 {continue}
+
+                println!("{temp_x} + {xdif}");
+
+                let cellx: usize = (temp_x + xdif) as usize;
+                let celly: usize = (temp_y + ydif) as usize;
+                positions.push((cellx, celly));
+
+                temp_x = temp_x + xdif;
+                temp_y = temp_y + ydif;
+            }
+
+            for position in positions {
+                let (col, row) = position;
+                self.gen_water(col, row);
+            }
+        }
+    }
+
+    fn gen_water(&mut self, col: usize, row: usize) {
         self.cells[row][col] = CellState::Water;
     }
 
