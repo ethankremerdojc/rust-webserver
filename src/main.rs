@@ -12,19 +12,18 @@ mod game;
 
 
 fn main() {
+    // game::base_case();
 
-    game::base_case();
+    let listener: TcpListener = TcpListener::bind("0.0.0.0:7878").unwrap();
+    let pool: ThreadPool = ThreadPool::new(4);
 
-    // let listener: TcpListener = TcpListener::bind("0.0.0.0:7878").unwrap();
-    // let pool: ThreadPool = ThreadPool::new(4);
+    for stream in listener.incoming() {
+        let stream: TcpStream = stream.unwrap();
 
-    // for stream in listener.incoming() {
-    //     let stream: TcpStream = stream.unwrap();
-
-    //     pool.execute(|| {
-    //         handle_connection(stream);
-    //     });
-    // }
+        pool.execute(|| {
+            handle_connection(stream);
+        });
+    }
 }
 
 fn handle_connection(mut stream: TcpStream) {

@@ -5,6 +5,8 @@ use std::{
     path::Path
 };
 
+use crate::game;
+
 pub fn get_request_parameters(request_line: String) -> (String, String) {
     let split_contents: Vec<&str> = request_line.split(" ").collect::<Vec<_>>();
     let request_type: String = String::from(split_contents[0]);
@@ -25,6 +27,8 @@ pub fn get_response(request_type: &str, uri: &str) -> String {
         (status_line, template_name) = game(request_type)
     } else if uri.starts_with("/static/") {
         (status_line, template_name) = static_file(request_type, uri)
+    } else if uri.starts_with("/api/") {
+        return api_response(request_type, uri)
     } else {
         (status_line, template_name) = four_oh_four(request_type)
     }
@@ -111,4 +115,23 @@ fn static_file(request_type: &str, uri: &str) -> (String, String) {
     } else {
         four_oh_four(request_type)
     }
+}
+
+fn api_response(request_type: &str, uri: &str) -> String {
+
+    if uri == "/api/map_generation" {
+        map_generation()
+    } else {
+        // broken
+        todo!()
+    }
+}
+
+fn map_generation() -> String {
+    let base_case = game::base_case();
+    let map_json = base_case.json();
+    let length = map_json.len();
+    let status_line: String = "HTTP/1.1 200 OK".to_string();
+    
+    format!("{status_line}\r\nContent-Length: {length}\r\nContent-Type: application/json\r\n\r\n{map_json}")
 }
