@@ -89,8 +89,8 @@ impl Map {
     }
 
     fn gen_water_sources(&mut self) {
-        self.gen_rivers();
         self.gen_lakes();
+        self.gen_rivers();
     }
 
     fn gen_lakes(&mut self) {
@@ -217,8 +217,6 @@ impl Map {
                 if ydif == -1 && temp_y == 0 {continue}
                 if ydif == 1 && temp_y == (MAP_HEIGHT - 1) as i32 {continue}
 
-                println!("{temp_x} + {xdif}");
-
                 let cellx: usize = (temp_x + xdif) as usize;
                 let celly: usize = (temp_y + ydif) as usize;
                 positions.push((cellx, celly));
@@ -315,6 +313,5 @@ impl Map {
 pub fn base_case() -> Map {
     let mut map = Map::new();
     map.generate();
-    map.render();
     map
 }
