@@ -65,8 +65,10 @@ fetch(request)
     });
 
     createPlayer(332, 368, map);
+    createEnemy(320, 120, map);
+    createEnemy(120, 170, map);
+    createEnemy(220, 420, map);
     doTick();
-  xCollisionExists(185, 3, 20);
   })
   .catch((error) => {
     console.error(error);
@@ -75,6 +77,15 @@ fetch(request)
 function createPlayer(x, y, map) {
   let playerDiv = document.createElement("div");
   playerDiv.id = "player";
+  playerDiv.style.bottom = y + "px";
+  playerDiv.style.left = x + "px";
+
+  map.appendChild(playerDiv);
+}
+
+function createEnemy(x, y, map) {
+  let playerDiv = document.createElement("div");
+  playerDiv.className = "enemy";
   playerDiv.style.bottom = y + "px";
   playerDiv.style.left = x + "px";
 
@@ -152,8 +163,53 @@ function movePlayer(){
     if (checkIfCollidedWithClass(player, "rock") || checkIfCollidedWithClass(player, "tree") || checkIfCollidedWithClass(player, "water")) {
       player.style.bottom = initial_bottom;
     }
+  }
+}
 
-    console.log(initial_left, initial_bottom)
+function moveEnemy(enemy){
+  const player = document.getElementById("player");
+
+  let enemy_y = Number(enemy.style.bottom.replace("px", ""));
+  let enemy_x = Number(enemy.style.left.replace("px", ""));
+  
+  let player_y = Number(player.style.bottom.replace("px", ""));
+  let player_x = Number(player.style.left.replace("px", ""));
+
+  let x_in_range = enemy_x - 200 < player_x && player_x < enemy_x + 200;
+  let y_in_range = enemy_y - 200 < player_y && player_y < enemy_y + 200;
+
+  if (!(x_in_range && y_in_range)) { return }
+
+  let delta_y = 0;
+  let delta_x = 0;
+
+  if (player_y > enemy_y) {
+    delta_y = 1;
+  }
+  if (player_y < enemy_y) {
+    delta_y = -1;
+  }
+  if (player_x > enemy_x) {
+    delta_x = 1;
+  }
+  if (player_x < enemy_x) {
+    delta_x = -1;
+  }
+
+  let bottomPx = (enemy_y + delta_y) + "px";
+  let leftPx = (enemy_x + delta_x) + "px";
+
+  let initial_left = enemy.style.left;
+  let initial_bottom = enemy.style.bottom;
+
+  enemy.style.left = leftPx;
+  if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "water")|| checkIfCollidedWithClass(enemy, "enemy")) {
+    enemy.style.left = initial_left;
+  }
+
+  enemy.style.bottom = bottomPx;
+  if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "water")|| checkIfCollidedWithClass(enemy, "enemy")) {
+    enemy.style.bottom = initial_bottom;
   }
 }
 
@@ -161,6 +217,11 @@ function checkIfCollidedWithClass(player, c) {
   let objs = document.getElementsByClassName(c);
 
   for (let obj of objs) {
+
+    if (obj == player) {
+      continue
+    }
+
     if (collides(player, obj)) {
       return true
     }
@@ -171,5 +232,12 @@ function checkIfCollidedWithClass(player, c) {
 
 function doTick() {
   movePlayer();
+
+  let enemies = document.getElementsByClassName("enemy");
+
+  for (let enemy of enemies) {
+    moveEnemy(enemy);
+  }
+  
   setTimeout(doTick, 20);
 }

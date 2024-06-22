@@ -22,3 +22,10 @@ body {
     width: 20px;
     position: absolute;
 }
+
+.enemy {
+    background: red;
+    height: 20px;
+    width: 20px;
+    position: absolute;
+}
