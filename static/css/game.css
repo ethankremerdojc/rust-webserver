@@ -24,8 +24,19 @@ body {
 }
 
 .enemy {
-    background: red;
     height: 20px;
     width: 20px;
     position: absolute;
+}
+
+.orange {
+    background: orange;
+}
+
+.yellow {
+    background: yellow;
+}
+
+.blue {
+    background: lightblue;
 }

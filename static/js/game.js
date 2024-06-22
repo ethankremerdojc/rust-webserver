@@ -65,9 +65,9 @@ fetch(request)
     });
 
     createPlayer(332, 368, map);
-    createEnemy(320, 120, map);
-    createEnemy(120, 170, map);
-    createEnemy(220, 420, map);
+    createEnemy(320, 120, map, "orange");
+    createEnemy(120, 170, map, "yellow");
+    createEnemy(220, 420, map, "blue");
     doTick();
   })
   .catch((error) => {
@@ -83,13 +83,14 @@ function createPlayer(x, y, map) {
   map.appendChild(playerDiv);
 }
 
-function createEnemy(x, y, map) {
-  let playerDiv = document.createElement("div");
-  playerDiv.className = "enemy";
-  playerDiv.style.bottom = y + "px";
-  playerDiv.style.left = x + "px";
+function createEnemy(x, y, map, additionalClass) {
+  let enemyDiv = document.createElement("div");
+  enemyDiv.className = "enemy";
+  enemyDiv.classList.add(additionalClass);
+  enemyDiv.style.bottom = y + "px";
+  enemyDiv.style.left = x + "px";
 
-  map.appendChild(playerDiv);
+  map.appendChild(enemyDiv);
 }
 
 var keys = [];
