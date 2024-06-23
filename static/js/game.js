@@ -4,6 +4,8 @@ let map_width = -1
 
 const request = new Request("/api/map_generation", {method: "GET",});
 
+let map = document.getElementById("map");;
+
 fetch(request)
   .then((response) => {
     if (response.status === 200) {
@@ -14,8 +16,6 @@ fetch(request)
   })
   .then((response) => {
     // console.log(response);
-    const map = document.getElementById("map");
-
     response.cells.forEach(row => {
         let xrow = document.createElement("div");
         xrow.className = "tilerow";
@@ -62,7 +62,7 @@ fetch(request)
   });
 
 function createPlayer(x, y, map) {
-  let playerDiv = document.createElement("div");
+  let playerDiv = document.createElement("span");
   playerDiv.id = "player";
   playerDiv.style.bottom = y + "px";
   playerDiv.style.left = x + "px";
@@ -71,7 +71,7 @@ function createPlayer(x, y, map) {
 }
 
 function createEnemy(x, y, map, additionalClass) {
-  let enemyDiv = document.createElement("div");
+  let enemyDiv = document.createElement("span");
   enemyDiv.className = "enemy";
   enemyDiv.classList.add(additionalClass);
   enemyDiv.style.bottom = y + "px";
@@ -93,6 +93,42 @@ window.addEventListener('keyup',
       keys[e.key] = false;
   },
 false);
+
+function getCenter(element) {
+  const {left, top, width, height} = element.getBoundingClientRect();
+  return {x: left + width / 2, y: top + height / 2}
+}
+
+function useSpear(e) {
+  let player = document.getElementById("player");
+    
+  if (player.querySelector("div")) { return }; // if spear already exists
+  
+  let spearBox = document.createElement("div");
+  let playerCenter = getCenter(player);
+  
+  const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x) + (Math.PI / 2);
+  spearBox.style.transform = `rotate(${angle}rad)`;
+  spearBox.className = "weapon-box";
+
+  player.appendChild(spearBox);
+  
+  let spear = document.createElement("div");
+  spear.className = "spear";
+  spearBox.appendChild(spear);
+
+  setTimeout(() => {spear.style.bottom = "16px"}, 4);
+  setTimeout(() => {spear.style.bottom = "0px"}, 414);
+  
+  setTimeout(() => {
+    player.removeChild(spearBox);
+  }, 710)
+}
+
+map.addEventListener('click',
+  (e) => {useSpear(e)},
+false);
+
 
 function collides(obj1, obj2) {
   let rect1 = obj1.getBoundingClientRect();
@@ -199,6 +235,11 @@ function moveEnemy(enemy){
   if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "water")|| checkIfCollidedWithClass(enemy, "enemy")) {
     enemy.style.bottom = initial_bottom;
   }
+
+  if (checkIfCollidedWithClass(enemy, "spear")) {
+    map.removeChild(enemy);
+    console.log("ENEMY DIED")
+  }
 }
 
 function checkIfCollidedWithClass(element, c) {
@@ -219,10 +260,18 @@ function checkIfCollidedWithClass(element, c) {
 }
 
 function doTick() {
+
+  if (!document.hasFocus()) {
+    keys = [];
+    // show pause screen here
+    setTimeout(doTick, 20);
+    return
+  }
+
   movePlayer();
-
+  
   let enemies = document.getElementsByClassName("enemy");
-
+  
   for (let enemy of enemies) {
     moveEnemy(enemy);
   }

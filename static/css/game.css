@@ -40,3 +40,21 @@ body {
 .blue {
     background: lightblue;
 }
+
+.weapon-box {
+    width: 11px;
+    height: 11px;
+    position: relative;
+    top:  4px;
+    left: 4px;
+}
+
+.spear {
+    background: grey;
+    height: 44px;
+    width: 7px;
+    position: absolute;
+    left: 2px;
+    bottom: -10px;
+    transition: bottom 350ms ease;
+}
