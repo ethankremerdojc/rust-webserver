@@ -1,16 +1,8 @@
-console.log("Running Game")
-
-// Make get request for base case
-
 const TILE_SIZE = 36;
 let map_height = -1;
 let map_width = -1
 
-const request = new Request("/api/map_generation", {
-    method: "GET",
-  });
-
-
+const request = new Request("/api/map_generation", {method: "GET",});
 
 fetch(request)
   .then((response) => {
@@ -58,11 +50,6 @@ fetch(request)
 
     map_height = response.cells.length * TILE_SIZE;
     map_width = response.cells[0].length * TILE_SIZE;
-
-    console.log({
-      map_height: map_height,
-      map_width: map_width
-    });
 
     createPlayer(332, 368, map);
     createEnemy(320, 120, map, "orange");
@@ -214,16 +201,16 @@ function moveEnemy(enemy){
   }
 }
 
-function checkIfCollidedWithClass(player, c) {
+function checkIfCollidedWithClass(element, c) {
   let objs = document.getElementsByClassName(c);
 
   for (let obj of objs) {
 
-    if (obj == player) {
+    if (obj == element) {
       continue
     }
 
-    if (collides(player, obj)) {
+    if (collides(element, obj)) {
       return true
     }
   }
