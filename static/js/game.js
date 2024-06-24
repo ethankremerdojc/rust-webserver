@@ -53,11 +53,11 @@ fetch(request)
 
     createPlayer(332, 368, map);
     createEnemy(400, 120, map, "orange", 3);
-    createEnemy(120, 170, map, "blue");
-    createEnemy(220, 420, map, "blue");
-    createEnemy(520, 520, map, "blue");
-    createEnemy(420, 370, map, "blue");
-    createEnemy(320, 120, map, "blue");
+    createEnemy(120, 170, map, "blue", 2);
+    createEnemy(220, 420, map, "blue", 2);
+    createEnemy(520, 520, map, "yellow", 1);
+    createEnemy(420, 370, map, "yellow", 1);
+    createEnemy(320, 120, map, "yellow", 1);
     doTick();
   })
   .catch((error) => {
