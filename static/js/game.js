@@ -1,6 +1,6 @@
 const TILE_SIZE = 36;
-let map_height = -1;
-let map_width = -1
+let MAP_HEIGHT = -1;
+let MAP_WIDTH = -1
 
 const request = new Request("/api/map_generation", {method: "GET",}); // ?seed=29
 
@@ -34,8 +34,8 @@ fetch(request)
 
     });
 
-    map_height = response.cells.length * TILE_SIZE;
-    map_width = response.cells[0].length * TILE_SIZE;
+    MAP_HEIGHT = response.cells.length * TILE_SIZE;
+    MAP_WIDTH = response.cells[0].length * TILE_SIZE;
     createBaseSetup();
     doTick();
   })
@@ -178,7 +178,7 @@ function movePlayer(){
   let leftPx;
 
   if(keys["w"]){
-    if (! (player_y + player_size >= map_height)) {
+    if (! (player_y + player_size >= MAP_HEIGHT)) {
       bottomPx = (player_y + 2) + "px";
     } 
   }
@@ -190,7 +190,7 @@ function movePlayer(){
   }
 
   if(keys["d"]){
-    if (! (player_x + player_size + 1 >= map_width)) {
+    if (! (player_x + player_size + 1 >= MAP_WIDTH)) {
       leftPx = (player_x + 2) + "px";
     } 
   }
