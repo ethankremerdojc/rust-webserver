@@ -11,7 +11,7 @@ use crate::game;
 
 //TODO 1. Allow browser to send specified seed.
 //TODO 2. Browser send the current game state and round number and current adjusted seed.
-
+//TODO 3. Let enemies have multiple hitpoints
 
 
 
