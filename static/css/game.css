@@ -65,12 +65,12 @@ body {
     position: absolute;
     left: 2px;
     bottom: -14px;
-    transition: bottom 350ms ease;
+    transition: bottom 270ms ease;
     display: none;
 }
 
 .hit {
-    opacity: 0.5;
+    opacity: 0.6;
 }
 
 .player-data {

@@ -52,11 +52,11 @@ fetch(request)
     map_width = response.cells[0].length * TILE_SIZE;
 
     createPlayer(332, 368, map);
-    createEnemy(400, 120, map, "orange");
-    createEnemy(120, 170, map, "yellow");
+    createEnemy(400, 120, map, "orange", 3);
+    createEnemy(120, 170, map, "blue");
     createEnemy(220, 420, map, "blue");
-    createEnemy(520, 520, map, "orange");
-    createEnemy(420, 370, map, "yellow");
+    createEnemy(520, 520, map, "blue");
+    createEnemy(420, 370, map, "blue");
     createEnemy(320, 120, map, "blue");
     doTick();
   })
@@ -82,12 +82,14 @@ function createPlayer(x, y, map) {
   weaponBox.appendChild(spear);
 }
 
-function createEnemy(x, y, map, additionalClass) {
+function createEnemy(x, y, map, additionalClass, hitpoints=1) {
   let enemyDiv = document.createElement("span");
   enemyDiv.className = "enemy";
   enemyDiv.classList.add(additionalClass);
   enemyDiv.style.bottom = y + "px";
   enemyDiv.style.left = x + "px";
+
+  enemyDiv.setAttribute("health", hitpoints);
 
   map.appendChild(enemyDiv);
 }
@@ -127,11 +129,11 @@ function useWeapon(e, cname) {
 
   // style.bottom is to move weapon in and out. This won't be applicable for weapons other than spears
   setTimeout(() => {weapon.style.bottom = "16px"}, 4);
-  setTimeout(() => {weapon.style.bottom = "-14px"}, 414);
+  setTimeout(() => {weapon.style.bottom = "-14px"}, 314);
 
   // Opacity on weapon is used to do use time
-  setTimeout(() => { weapon.style.display = "none"; weapon.style.opacity = "0"; }, 600)
-  setTimeout(() => { weapon.style.opacity = "1"; }, 900)
+  setTimeout(() => { weapon.style.display = "none"; weapon.style.opacity = "0"; }, 490)
+  setTimeout(() => { weapon.style.opacity = "1"; }, 700)
 }
 
 function useSpear(e) {
@@ -249,8 +251,19 @@ function moveEnemy(enemy){
   }
 
   if (checkIfCollidedWithClass(enemy, "spear")) {
-    map.removeChild(enemy);
-    console.log("ENEMY DIED")
+    if (enemy.classList.contains("hit")) { return }
+
+    enemy.classList.add("hit");
+
+    
+    let enemy_health = Number(enemy.getAttribute("health"));
+    console.log(enemy_health);
+    enemy_health -= 1;
+
+    if (enemy_health == 0) { map.removeChild(enemy); }
+
+    enemy.setAttribute("health", enemy_health);
+    setTimeout(() => {enemy.classList.remove("hit")}, 500)
   }
 }
 
@@ -275,7 +288,7 @@ function doTick() {
 
   if (!document.hasFocus()) {
     keys = [];
-    // show pause screen here
+    //todo show pause screen here
     setTimeout(doTick, 20);
     return
   }
@@ -291,7 +304,6 @@ function doTick() {
   }
 
   if (checkIfCollidedWithClass(player, "enemy") && !player.classList.contains("hit")) {
-    console.log("WE HAVE BEEN HIT")
     player.classList.add("hit");
 
     let heartsBlock = document.getElementById("hearts");
