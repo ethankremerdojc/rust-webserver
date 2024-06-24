@@ -51,10 +51,18 @@ fn handle_connection(mut stream: TcpStream) {
     };
 
     let (request_type, uri) = urls::get_request_parameters(request_line);
-    let response: String = get_response(&request_type, &uri);
+    let (status_line, content_type, contents) = get_response(&request_type, &uri);
 
-    match stream.write_all(response.as_bytes()) {
-        Err(error) => println!("Problem writing response: {error:?}"),
-        _ => { println!("ok") },
-    };
+    let response = format!(
+        "{}\r\nContent-Length: {}\r\n\r\n",
+        status_line,
+        contents.len()
+    );
+
+    stream.write(response.as_bytes()).unwrap();
+    stream.write(&contents).unwrap();
+    // match stream.write_all(response.as_bytes()) {
+    //     Err(error) => println!("Problem writing response: {error:?}"),
+    //     _ => { println!("ok") },
+    // };
 }

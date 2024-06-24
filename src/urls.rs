@@ -15,7 +15,7 @@ pub fn get_request_parameters(request_line: String) -> (String, String) {
     (request_type, uri)
 }
 
-pub fn get_response(request_type: &str, uri: &str) -> String {
+pub fn get_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) {
     let status_line: String;
     let template_name: String;
 
@@ -47,6 +47,8 @@ fn get_content_type(template_name_sub: &String) -> &str {
         content_type = "text/css"
     } else if template_name_sub.ends_with(".js") {
         content_type = "text/javascript"
+    } else if template_name_sub.ends_with(".png") {
+        content_type = "image/png"
     } else {
         content_type = "text/plain"
     }
@@ -54,9 +56,9 @@ fn get_content_type(template_name_sub: &String) -> &str {
     content_type
 }
 
-fn get_file_response(mut status_line: String, template_name: String, uri: &str, request_type: &str) -> String {
-    let contents_result: Result<String, std::io::Error> = fs::read_to_string(&template_name);
-    let contents;
+fn get_file_response(mut status_line: String, template_name: String, uri: &str, request_type: &str) -> (String, String, Vec<u8>) {
+    let contents_result = fs::read(&template_name);
+    let contents: Vec<u8>;
 
     let template_name_sub = &template_name;
 
@@ -64,15 +66,15 @@ fn get_file_response(mut status_line: String, template_name: String, uri: &str, 
         Ok(file) => contents = file,
         Err(error) => {
             (status_line, _) = four_oh_four(request_type);
-            contents = fs::read_to_string(template_name_sub).unwrap();
+            contents = fs::read(template_name_sub).unwrap();
             println!("{error:?}");
             println!("{uri:?}");
         }
     }
 
-    let content_type = get_content_type(template_name_sub);
-    let length: usize = contents.len();
-    format!("{status_line}\r\nContent-Length: {length}\r\nContent-Type: {content_type}\r\n\r\n{contents}")
+    let content_type = get_content_type(template_name_sub).to_string();
+
+    (status_line, content_type, contents)
 }
 
 fn home(request_type: &str) -> (String, String) {
@@ -117,7 +119,7 @@ fn static_file(request_type: &str, uri: &str) -> (String, String) {
     }
 }
 
-fn api_response(request_type: &str, uri: &str) -> String {
+fn api_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) {
 
     if uri == "/api/map_generation" {
         map_generation()
@@ -127,11 +129,11 @@ fn api_response(request_type: &str, uri: &str) -> String {
     }
 }
 
-fn map_generation() -> String {
+fn map_generation() -> (String, String, Vec<u8>) {
+    let status_line: String = "HTTP/1.1 200 OK".to_string();
+
     let base_case = game::base_case();
     let map_json = base_case.json();
-    let length = map_json.len();
-    let status_line: String = "HTTP/1.1 200 OK".to_string();
     
-    format!("{status_line}\r\nContent-Length: {length}\r\nContent-Type: application/json\r\n\r\n{map_json}")
+    (status_line, "application/json".to_string(), map_json.as_bytes().to_vec())
 }
