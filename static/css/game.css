@@ -64,7 +64,7 @@ body {
     width: 7px;
     position: absolute;
     left: 2px;
-    bottom: -14px;
+    bottom: -8px;
     transition: bottom 270ms ease;
     display: none;
 }
@@ -83,4 +83,8 @@ body {
 .hearts {
     display: flex;
     gap: 4px;
+}
+
+.frame-hidden {
+    display: none;
 }

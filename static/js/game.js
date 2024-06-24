@@ -48,9 +48,9 @@ function createBaseSetup() {
   createEnemy(400, 120, map, "orange", 3);
   createEnemy(120, 170, map, "blue", 2);
   createEnemy(220, 420, map, "blue", 2);
-  createEnemy(520, 520, map, "yellow", 1);
-  createEnemy(420, 370, map, "yellow", 1);
-  createEnemy(320, 120, map, "yellow", 1);
+  createEnemy(520, 520, map, "yellow", 7);
+  createEnemy(420, 370, map, "yellow", 7);
+  createEnemy(320, 120, map, "yellow", 7);
 }
 
 function getTileParameters(cell) {
@@ -103,6 +103,27 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
 
   enemyDiv.setAttribute("health", hitpoints);
 
+  let dirPath = "/static/images/png/blue_slime/idle/";
+  // 6
+  let imageCount = 6;
+
+  let frameNumber = 1;
+  enemyDiv.setAttribute("framenumber", frameNumber);
+  enemyDiv.setAttribute("framecount", imageCount);
+
+  for (var i=1; i < imageCount + 1; i++) {
+    let imagePath = dirPath + i + ".png";
+    
+    let image = document.createElement("img");
+    image.className = "enemy-frame";
+
+    if (i != frameNumber) {
+      image.classList.add("frame-hidden");
+    }
+
+    image.src = imagePath;
+    enemyDiv.appendChild(image);
+  }
   map.appendChild(enemyDiv);
 }
 
@@ -142,7 +163,7 @@ function useWeapon(e, cname) {
 
   // style.bottom is to move weapon in and out. This won't be applicable for weapons other than spears
   setTimeout(() => {weapon.style.bottom = "16px"}, 4);
-  setTimeout(() => {weapon.style.bottom = "-14px"}, 314);
+  setTimeout(() => {weapon.style.bottom = "-8px"}, 314);
 
   // Opacity on weapon is used to do use time
   setTimeout(() => { weapon.style.display = "none"; weapon.style.opacity = "0"; }, 490)
@@ -217,7 +238,7 @@ function movePlayer(){
   }
 }
 
-function moveEnemy(enemy){
+function moveEnemy(enemy){ // returns bool moving
   // when enemy has been hit, just don't move until iframes gone
   if (enemy.classList.contains("hit")) { return } 
 
@@ -253,22 +274,29 @@ function moveEnemy(enemy){
   let bottomPx = (enemy_y + delta_y) + "px";
   let leftPx = (enemy_x + delta_x) + "px";
 
+  let leftMoving = true;
+  let bottomMoving = true;
+
   let initial_left = enemy.style.left;
   let initial_bottom = enemy.style.bottom;
 
   enemy.style.left = leftPx;
   if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "water")|| checkIfCollidedWithClass(enemy, "enemy")) {
     enemy.style.left = initial_left;
+    leftMoving = false;
   }
 
   enemy.style.bottom = bottomPx;
   if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "water")|| checkIfCollidedWithClass(enemy, "enemy")) {
     enemy.style.bottom = initial_bottom;
+    bottomMoving = false;
   }
 
   if (checkIfCollidedWithClass(enemy, "spear")) {
     removeHealthOrKill(enemy)
   }
+
+  if (leftMoving || bottomMoving) { return true } else { return false }
 }
 
 function removeHealthOrKill(enemy) {
@@ -297,7 +325,7 @@ function checkIfCollidedWithClass(element, c) {
   return false
 }
 
-function doTick() {
+function doTick(even=false) {
   if (!document.hasFocus()) {
     keys = [];
     //todo show pause screen here
@@ -312,14 +340,25 @@ function doTick() {
   let enemies = document.getElementsByClassName("enemy");
   
   for (let enemy of enemies) {
-    moveEnemy(enemy);
+    let moving = moveEnemy(enemy);
+
+    if (even) {
+      animate(enemy, moving);
+    }
   }
 
   if (checkIfCollidedWithClass(player, "enemy") && !player.classList.contains("hit")) {
     removeHeart(player)
   }
+
+  let newEven;
+  if (even) {
+    newEven = false
+  } else {
+    newEven = true
+  }
   
-  setTimeout(doTick, 20);
+  setTimeout(() => doTick(newEven), 26);
 }
 
 function removeHeart(player) {
@@ -336,3 +375,26 @@ function removeHeart(player) {
   setTimeout(() => {player.classList.remove("hit")}, 500);
 }
 
+function animate(obj, moving) {
+
+  // update both idle and moving images for simplicity, then display the one that is relevant based on moving var
+
+  let frameNumber = Number(obj.getAttribute("framenumber"));
+  let frameCount = Number(obj.getAttribute("framecount"));
+
+  let nextFrame = -1;
+
+  if (frameNumber == frameCount) {
+    nextFrame = 1;
+  } else {
+    nextFrame = frameNumber + 1;
+  }
+
+  let currentImage = obj.children[frameNumber - 1];
+  let nextImage = obj.children[nextFrame - 1];
+
+  currentImage.classList.add("frame-hidden");
+  nextImage.classList.remove("frame-hidden");
+
+  obj.setAttribute("framenumber", nextFrame);
+}

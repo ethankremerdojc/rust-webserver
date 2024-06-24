@@ -1,5 +1,5 @@
-const MAP_WIDTH: usize = 26;
-const MAP_HEIGHT: usize = 26;
+const MAP_WIDTH: usize = 24;
+const MAP_HEIGHT: usize = 24;
 
 const SEED: u32 = 14; // 38
 const MAX_SEED_SIZE: u32 = 33391; //33391; // all 3 of below are primes
