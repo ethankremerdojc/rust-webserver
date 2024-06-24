@@ -60,11 +60,11 @@ body {
 }
 
 .spear {
-    background: grey;
     height: 44px;
     width: 7px;
     position: absolute;
     left: 2px;
     bottom: -10px;
     transition: bottom 350ms ease;
+    display: none;
 }

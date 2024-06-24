@@ -68,6 +68,15 @@ function createPlayer(x, y, map) {
   playerDiv.style.left = x + "px";
 
   map.appendChild(playerDiv);
+
+  let weaponBox = document.createElement("div");
+  player.appendChild(weaponBox);
+  weaponBox.className = "weapon-box";
+
+  let spear = document.createElement("img");
+  spear.src = "/static/images/png/spear.png";
+  spear.className = "spear";
+  weaponBox.appendChild(spear);
 }
 
 function createEnemy(x, y, map, additionalClass) {
@@ -99,40 +108,36 @@ function getCenter(element) {
   return {x: left + width / 2, y: top + height / 2}
 }
 
-function useSpear(e) {
-
-  // Need to just use display none otherwise image comes in and out of vision
-
+function useWeapon(e, cname) {
+  
   let player = document.getElementById("player");
-    
-  if (player.querySelector("div")) { return }; // if spear already exists
+  let weaponBox = player.querySelector(".weapon-box");
+  let weapon = weaponBox.querySelector("." + cname);
   
-  let spearBox = document.createElement("div");
+  if (weapon.style.display == "block" || weapon.style.opacity == "0") { return }
+  
   let playerCenter = getCenter(player);
-  
   const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x) + (Math.PI / 2);
-  spearBox.style.transform = `rotate(${angle}rad)`;
-  spearBox.className = "weapon-box";
-
-  player.appendChild(spearBox);
+  weaponBox.style.transform = `rotate(${angle}rad)`;
   
-  let spear = document.createElement("img");
-  spear.src = "/static/images/png/spear.png";
-  spear.className = "spear";
-  spearBox.appendChild(spear);
+  weapon.style.display = "block";
 
-  setTimeout(() => {spear.style.bottom = "16px"}, 4);
-  setTimeout(() => {spear.style.bottom = "0px"}, 414);
-  
-  setTimeout(() => {
-    player.removeChild(spearBox);
-  }, 710)
+  // style.bottom is to move weapon in and out. This won't be applicable for weapons other than spears
+  setTimeout(() => {weapon.style.bottom = "16px"}, 4);
+  setTimeout(() => {weapon.style.bottom = "-14px"}, 414);
+
+  // Opacity on weapon is used to do use time
+  setTimeout(() => { weapon.style.display = "none"; weapon.style.opacity = "0"; }, 600)
+  setTimeout(() => { weapon.style.opacity = "1"; }, 900)
+}
+
+function useSpear(e) {
+  useWeapon(e, "spear");
 }
 
 map.addEventListener('click',
   (e) => {useSpear(e)},
 false);
-
 
 function collides(obj1, obj2) {
   let rect1 = obj1.getBoundingClientRect();
