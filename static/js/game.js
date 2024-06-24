@@ -277,12 +277,20 @@ function doTick() {
     return
   }
 
+  const player = document.getElementById("player");
+
   movePlayer();
   
   let enemies = document.getElementsByClassName("enemy");
   
   for (let enemy of enemies) {
     moveEnemy(enemy);
+  }
+
+  if (checkIfCollidedWithClass(player, "enemy") && !player.classList.contains("hit")) {
+    console.log("WE HAVE BEEN HIT")
+    player.classList.add("hit");
+    setTimeout(() => {player.classList.remove("hit")}, 500);
   }
   
   setTimeout(doTick, 20);

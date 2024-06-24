@@ -64,7 +64,11 @@ body {
     width: 7px;
     position: absolute;
     left: 2px;
-    bottom: -10px;
+    bottom: -14px;
     transition: bottom 350ms ease;
     display: none;
+}
+
+.hit {
+    opacity: 0.5;
 }
