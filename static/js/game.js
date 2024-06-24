@@ -390,10 +390,15 @@ function animate(obj, moving) {
     nextFrame = frameNumber + 1;
   }
 
+  /// obj.children should be based on moving
   let currentImage = obj.children[frameNumber - 1];
+
+
   let nextImage = obj.children[nextFrame - 1];
 
+  // change below to set any frames that are visible to hidden
   currentImage.classList.add("frame-hidden");
+
   nextImage.classList.remove("frame-hidden");
 
   obj.setAttribute("framenumber", nextFrame);
