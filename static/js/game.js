@@ -24,23 +24,9 @@ fetch(request)
             let ycol = document.createElement("span");
             ycol.className = "tile";
 
-            if (cell == "blank") {
-                ycol.style.background = "#8a5f36";
-                ycol.classList.add("dirt");
-            } else if (cell == "rock") {
-                ycol.style.background = "grey";
-                ycol.classList.add("rock");
-            } else if (cell == "tree") {
-                ycol.style.background = "green";
-                ycol.classList.add("tree");
-            } else if (cell == "water") {
-                ycol.style.background = "blue";
-                ycol.classList.add("water");
-            } else {
-                ycol.style.background = "white";
-                ycol.classList.add("broken");
-            }
-
+            let cellParams = getTileParameters(cell);
+            ycol.classList.add(cellParams["class"]);
+            ycol.style.background = cellParams["background"];
             xrow.appendChild(ycol);
         })
 
@@ -50,19 +36,45 @@ fetch(request)
 
     map_height = response.cells.length * TILE_SIZE;
     map_width = response.cells[0].length * TILE_SIZE;
-
-    createPlayer(332, 368, map);
-    createEnemy(400, 120, map, "orange", 3);
-    createEnemy(120, 170, map, "blue", 2);
-    createEnemy(220, 420, map, "blue", 2);
-    createEnemy(520, 520, map, "yellow", 1);
-    createEnemy(420, 370, map, "yellow", 1);
-    createEnemy(320, 120, map, "yellow", 1);
+    createBaseSetup();
     doTick();
   })
   .catch((error) => {
     console.error(error);
   });
+
+function createBaseSetup() {
+  createPlayer(332, 368, map);
+  createEnemy(400, 120, map, "orange", 3);
+  createEnemy(120, 170, map, "blue", 2);
+  createEnemy(220, 420, map, "blue", 2);
+  createEnemy(520, 520, map, "yellow", 1);
+  createEnemy(420, 370, map, "yellow", 1);
+  createEnemy(320, 120, map, "yellow", 1);
+}
+
+function getTileParameters(cell) {
+  let params = {
+    "blank": {
+      "background": "#8a5f36",
+      "class": "dirt"
+    },
+    "rock": {
+      "background": "grey",
+      "class": "rock"
+    },
+    "tree": {
+      "background": "green",
+      "class": "tree"
+    },
+    "water": {
+      "background": "blue",
+      "class": "water"
+    },
+  }
+
+  return params[cell]
+}
 
 function createPlayer(x, y, map) {
   let playerDiv = document.createElement("span");
@@ -114,7 +126,6 @@ function getCenter(element) {
 }
 
 function useWeapon(e, cname) {
-  
   let player = document.getElementById("player");
   let weaponBox = player.querySelector(".weapon-box");
   let weapon = weaponBox.querySelector("." + cname);
@@ -126,6 +137,8 @@ function useWeapon(e, cname) {
   weaponBox.style.transform = `rotate(${angle}rad)`;
   
   weapon.style.display = "block";
+
+  //todo change how this func works based on weapon parameters
 
   // style.bottom is to move weapon in and out. This won't be applicable for weapons other than spears
   setTimeout(() => {weapon.style.bottom = "16px"}, 4);
@@ -254,13 +267,17 @@ function moveEnemy(enemy){
   }
 
   if (checkIfCollidedWithClass(enemy, "spear")) {
-    enemy.classList.add("hit");
-    let enemy_health = Number(enemy.getAttribute("health"));
-    enemy_health -= 1;
-    if (enemy_health == 0) { map.removeChild(enemy); }
-    enemy.setAttribute("health", enemy_health);
-    setTimeout(() => {enemy.classList.remove("hit")}, 400)
+    removeHealthOrKill(enemy)
   }
+}
+
+function removeHealthOrKill(enemy) {
+  enemy.classList.add("hit");
+  let enemy_health = Number(enemy.getAttribute("health"));
+  enemy_health -= 1;
+  if (enemy_health == 0) { map.removeChild(enemy); }
+  enemy.setAttribute("health", enemy_health);
+  setTimeout(() => {enemy.classList.remove("hit")}, 400)
 }
 
 function checkIfCollidedWithClass(element, c) {
@@ -281,7 +298,6 @@ function checkIfCollidedWithClass(element, c) {
 }
 
 function doTick() {
-
   if (!document.hasFocus()) {
     keys = [];
     //todo show pause screen here
@@ -300,18 +316,23 @@ function doTick() {
   }
 
   if (checkIfCollidedWithClass(player, "enemy") && !player.classList.contains("hit")) {
-    player.classList.add("hit");
-
-    let heartsBlock = document.getElementById("hearts");
-    let hearts = heartsBlock.querySelectorAll(".heart");
-
-    if (hearts.length > 0) {
-      let last = hearts[hearts.length - 1];
-      last.parentNode.removeChild(last);
-    }
-
-    setTimeout(() => {player.classList.remove("hit")}, 500);
+    removeHeart(player)
   }
   
   setTimeout(doTick, 20);
 }
+
+function removeHeart(player) {
+  player.classList.add("hit");
+
+  let heartsBlock = document.getElementById("hearts");
+  let hearts = heartsBlock.querySelectorAll(".heart");
+
+  if (hearts.length > 0) {
+    let last = hearts[hearts.length - 1];
+    last.parentNode.removeChild(last);
+  }
+
+  setTimeout(() => {player.classList.remove("hit")}, 500);
+}
+
