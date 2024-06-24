@@ -7,6 +7,14 @@ use std::{
 
 use crate::game;
 
+
+
+//TODO 1. Allow browser to send specified seed.
+//TODO 2. Browser send the current game state and round number and current adjusted seed.
+
+
+
+
 pub fn get_request_parameters(request_line: String) -> (String, String) {
     let split_contents: Vec<&str> = request_line.split(" ").collect::<Vec<_>>();
     let request_type: String = String::from(split_contents[0]);

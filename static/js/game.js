@@ -52,9 +52,12 @@ fetch(request)
     map_width = response.cells[0].length * TILE_SIZE;
 
     createPlayer(332, 368, map);
-    createEnemy(320, 120, map, "orange");
+    createEnemy(400, 120, map, "orange");
     createEnemy(120, 170, map, "yellow");
     createEnemy(220, 420, map, "blue");
+    createEnemy(520, 520, map, "orange");
+    createEnemy(420, 370, map, "yellow");
+    createEnemy(320, 120, map, "blue");
     doTick();
   })
   .catch((error) => {
@@ -294,17 +297,10 @@ function doTick() {
     let heartsBlock = document.getElementById("hearts");
     let hearts = heartsBlock.querySelectorAll(".heart");
 
-    let last = hearts[hearts.length - 1];
-    console.log(last);
-
-    last.parentNode.removeChild(last);
-    
-    // if (hearts.length > 0) {
-    // hearts.pop();
-
-
-    // heartsBlock.removeChild(hearts.lastChild);
-    // }
+    if (hearts.length > 0) {
+      let last = hearts[hearts.length - 1];
+      last.parentNode.removeChild(last);
+    }
 
     setTimeout(() => {player.classList.remove("hit")}, 500);
   }
