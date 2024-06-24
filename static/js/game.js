@@ -2,7 +2,7 @@ const TILE_SIZE = 36;
 let map_height = -1;
 let map_width = -1
 
-const request = new Request("/api/map_generation", {method: "GET",});
+const request = new Request("/api/map_generation", {method: "GET",}); // ?seed=29
 
 let map = document.getElementById("map");;
 
@@ -17,11 +17,11 @@ fetch(request)
   .then((response) => {
     // console.log(response);
     response.cells.forEach(row => {
-        let xrow = document.createElement("div");
+        let xrow = document.createElement("span");
         xrow.className = "tilerow";
 
         row.forEach(cell => {
-            let ycol = document.createElement("div");
+            let ycol = document.createElement("span");
             ycol.className = "tile";
 
             if (cell == "blank") {
@@ -100,6 +100,9 @@ function getCenter(element) {
 }
 
 function useSpear(e) {
+
+  // Need to just use display none otherwise image comes in and out of vision
+
   let player = document.getElementById("player");
     
   if (player.querySelector("div")) { return }; // if spear already exists
@@ -113,7 +116,8 @@ function useSpear(e) {
 
   player.appendChild(spearBox);
   
-  let spear = document.createElement("div");
+  let spear = document.createElement("img");
+  spear.src = "/static/images/png/spear.png";
   spear.className = "spear";
   spearBox.appendChild(spear);
 
