@@ -72,3 +72,15 @@ body {
 .hit {
     opacity: 0.5;
 }
+
+.player-data {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 20px;
+}
+
+.hearts {
+    display: flex;
+    gap: 4px;
+}

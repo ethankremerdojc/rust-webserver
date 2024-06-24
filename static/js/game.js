@@ -290,6 +290,22 @@ function doTick() {
   if (checkIfCollidedWithClass(player, "enemy") && !player.classList.contains("hit")) {
     console.log("WE HAVE BEEN HIT")
     player.classList.add("hit");
+
+    let heartsBlock = document.getElementById("hearts");
+    let hearts = heartsBlock.querySelectorAll(".heart");
+
+    let last = hearts[hearts.length - 1];
+    console.log(last);
+
+    last.parentNode.removeChild(last);
+    
+    // if (hearts.length > 0) {
+    // hearts.pop();
+
+
+    // heartsBlock.removeChild(hearts.lastChild);
+    // }
+
     setTimeout(() => {player.classList.remove("hit")}, 500);
   }
   
