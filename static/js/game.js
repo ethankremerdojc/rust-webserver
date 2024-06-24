@@ -205,6 +205,9 @@ function movePlayer(){
 }
 
 function moveEnemy(enemy){
+  // when enemy has been hit, just don't move until iframes gone
+  if (enemy.classList.contains("hit")) { return } 
+
   const player = document.getElementById("player");
 
   let enemy_y = Number(enemy.style.bottom.replace("px", ""));
@@ -251,19 +254,12 @@ function moveEnemy(enemy){
   }
 
   if (checkIfCollidedWithClass(enemy, "spear")) {
-    if (enemy.classList.contains("hit")) { return }
-
     enemy.classList.add("hit");
-
-    
     let enemy_health = Number(enemy.getAttribute("health"));
-    console.log(enemy_health);
     enemy_health -= 1;
-
     if (enemy_health == 0) { map.removeChild(enemy); }
-
     enemy.setAttribute("health", enemy_health);
-    setTimeout(() => {enemy.classList.remove("hit")}, 500)
+    setTimeout(() => {enemy.classList.remove("hit")}, 400)
   }
 }
 
