@@ -47,9 +47,9 @@ body {
     background: yellow;
 }
 
-.blue {
+/* .blue {
     background: lightblue;
-}
+} */
 
 .weapon-box {
     width: 11px;
@@ -83,10 +83,6 @@ body {
 .hearts {
     display: flex;
     gap: 4px;
-}
-
-.frame-hidden {
-    display: none;
 }
 
 .image-cache {

@@ -48,12 +48,12 @@ function createBaseSetup() {
 
   initializeEnemyImages();
 
-  createEnemy(400, 120, map, "orange", 3);
+  createEnemy(400, 120, map, "blue", 3);
   createEnemy(120, 170, map, "blue", 2);
   createEnemy(220, 420, map, "blue", 2);
-  createEnemy(520, 520, map, "yellow", 7);
-  createEnemy(420, 370, map, "yellow", 7);
-  createEnemy(320, 120, map, "yellow", 7);
+  createEnemy(520, 520, map, "blue", 7);
+  createEnemy(420, 370, map, "blue", 7);
+  createEnemy(320, 120, map, "blue", 7);
 }
 
 function getTileParameters(cell) {
@@ -149,7 +149,6 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
 
   let imagePath = idleDirPath + "1" + ".png";
   let image = document.createElement("img");
-  image.className = "enemy-frame";
   image.src = imagePath;
   enemyDiv.appendChild(image);
 
@@ -387,7 +386,7 @@ function doTick(even=false) {
     newEven = true
   }
   
-  setTimeout(() => doTick(newEven), 26);
+  setTimeout(() => doTick(newEven), 27);
 }
 
 function removeHeart(player) {
