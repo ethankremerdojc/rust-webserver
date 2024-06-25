@@ -100,7 +100,7 @@ function createPlayer(x, y, map) {
 function initializeEnemyImages() {
   let imageCacheDiv = document.querySelector(".image-cache");
 
-  let sprites = ["blue_slime"];
+  let sprites = ["blue_slime"]; // , "green_slime"
 
   let dirPath = "/static/images/png/";
 
