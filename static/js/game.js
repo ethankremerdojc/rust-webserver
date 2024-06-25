@@ -266,7 +266,7 @@ function movePlayer(){
   }
 }
 
-function moveEnemy(enemy){ // returns bool moving
+function moveEnemy(enemy, even){ // returns bool moving
   // when enemy has been hit, just don't move until iframes gone
   if (enemy.classList.contains("hit")) { return } 
 
@@ -308,14 +308,18 @@ function moveEnemy(enemy){ // returns bool moving
   let initial_left = enemy.style.left;
   let initial_bottom = enemy.style.bottom;
 
+  if (checkIfCollidedWithClass(enemy, "water") && even) {
+    return true
+  } 
+
   enemy.style.left = leftPx;
-  if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "water")|| checkIfCollidedWithClass(enemy, "enemy")) {
+  if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "enemy")) {
     enemy.style.left = initial_left;
     leftMoving = false;
   }
 
   enemy.style.bottom = bottomPx;
-  if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "water")|| checkIfCollidedWithClass(enemy, "enemy")) {
+  if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "enemy")) {
     enemy.style.bottom = initial_bottom;
     bottomMoving = false;
   }
@@ -368,7 +372,7 @@ function doTick(even=false) {
   let enemies = document.getElementsByClassName("enemy");
   
   for (let enemy of enemies) {
-    let moving = moveEnemy(enemy);
+    let moving = moveEnemy(enemy, even);
 
     if (even) {
       animate(enemy, moving);
