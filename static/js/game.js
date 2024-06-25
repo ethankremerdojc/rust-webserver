@@ -103,8 +103,10 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
 
   enemyDiv.setAttribute("health", hitpoints);
 
-  let dirPath = "/static/images/png/blue_slime/idle/";
-  // 6
+  let mainDirPath = "/static/images/png/blue_slime/";
+  let idleDirPath = mainDirPath + "idle/";
+  let movingDirPath = mainDirPath + "moving/";
+
   let imageCount = 6;
 
   let frameNumber = 1;
@@ -112,17 +114,34 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
   enemyDiv.setAttribute("framecount", imageCount);
 
   for (var i=1; i < imageCount + 1; i++) {
-    let imagePath = dirPath + i + ".png";
+    // Idle:
+    let idleImagePath = idleDirPath + i + ".png";
     
-    let image = document.createElement("img");
-    image.className = "enemy-frame";
+    let idleImage = document.createElement("img");
+    idleImage.className = "enemy-frame";
+    idleImage.classList.add("frame-idle");
 
     if (i != frameNumber) {
-      image.classList.add("frame-hidden");
+      idleImage.classList.add("frame-hidden");
+    } else {
+      idleImage.classList.add("frame-displayed");
     }
 
-    image.src = imagePath;
-    enemyDiv.appendChild(image);
+    idleImage.src = idleImagePath;
+    enemyDiv.appendChild(idleImage);
+
+    // Moving Image
+
+    let movingImagePath = movingDirPath + i + ".png";
+    
+    let movingImage = document.createElement("img");
+    movingImage.className = "enemy-frame";
+    movingImage.classList.add("frame-moving");
+
+    movingImage.classList.add("frame-hidden");
+
+    movingImage.src = movingImagePath;
+    enemyDiv.appendChild(movingImage);
   }
   map.appendChild(enemyDiv);
 }
@@ -376,7 +395,6 @@ function removeHeart(player) {
 }
 
 function animate(obj, moving) {
-
   // update both idle and moving images for simplicity, then display the one that is relevant based on moving var
 
   let frameNumber = Number(obj.getAttribute("framenumber"));
@@ -391,14 +409,22 @@ function animate(obj, moving) {
   }
 
   /// obj.children should be based on moving
-  let currentImage = obj.children[frameNumber - 1];
+  let children;
 
+  if (moving) {
+    children = obj.querySelectorAll(".frame-moving");
+  } else {
+    children = obj.querySelectorAll(".frame-idle");
+  }
 
-  let nextImage = obj.children[nextFrame - 1];
+  let currentImage = obj.querySelector(".frame-displayed");
+  let nextImage = children[nextFrame - 1];
 
   // change below to set any frames that are visible to hidden
   currentImage.classList.add("frame-hidden");
+  currentImage.classList.remove("frame-displayed");
 
+  nextImage.classList.add("frame-displayed");
   nextImage.classList.remove("frame-hidden");
 
   obj.setAttribute("framenumber", nextFrame);
