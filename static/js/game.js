@@ -216,7 +216,7 @@ function collides(obj1, obj2) {
     rect1.top > rect2.bottom)
 }
 
-function movePlayer(){
+function movePlayer(even){
   let player_size = 20;
   const player = document.getElementById("player");
 
@@ -253,14 +253,18 @@ function movePlayer(){
   if (keys["w"] || keys["a"] || keys["s"] || keys["d"]) {
     let initial_left = player.style.left;
     let initial_bottom = player.style.bottom;
+
+    if (checkIfCollidedWithClass(player, "water") && even) { // essentially halves speed in water
+      return true
+    }
   
     player.style.left = leftPx;
-    if (checkIfCollidedWithClass(player, "rock") || checkIfCollidedWithClass(player, "tree") || checkIfCollidedWithClass(player, "water")) {
+    if (checkIfCollidedWithClass(player, "rock") || checkIfCollidedWithClass(player, "tree")) {
       player.style.left = initial_left;
     }
 
     player.style.bottom = bottomPx;
-    if (checkIfCollidedWithClass(player, "rock") || checkIfCollidedWithClass(player, "tree") || checkIfCollidedWithClass(player, "water")) {
+    if (checkIfCollidedWithClass(player, "rock") || checkIfCollidedWithClass(player, "tree")) {
       player.style.bottom = initial_bottom;
     }
   }
@@ -367,7 +371,7 @@ function doTick(even=false) {
 
   const player = document.getElementById("player");
 
-  movePlayer();
+  movePlayer(even);
   
   let enemies = document.getElementsByClassName("enemy");
   
