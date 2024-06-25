@@ -1,7 +1,7 @@
 const MAP_WIDTH: usize = 24;
 const MAP_HEIGHT: usize = 24;
 
-const SEED: u32 = 14; // 38
+const SEED: u32 = 914; // 38
 const MAX_SEED_SIZE: u32 = 33391; //33391; // all 3 of below are primes
 const MULT_NUM: u32 = 3803; //3803;
 const ADD_NUM: u32 = 7499; //7499;
