@@ -88,3 +88,7 @@ body {
 .frame-hidden {
     display: none;
 }
+
+.image-cache {
+    display: none;
+}

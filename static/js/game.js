@@ -45,6 +45,9 @@ fetch(request)
 
 function createBaseSetup() {
   createPlayer(332, 368, map);
+
+  initializeEnemyImages();
+
   createEnemy(400, 120, map, "orange", 3);
   createEnemy(120, 170, map, "blue", 2);
   createEnemy(220, 420, map, "blue", 2);
@@ -94,6 +97,32 @@ function createPlayer(x, y, map) {
   weaponBox.appendChild(spear);
 }
 
+function initializeEnemyImages() {
+  let imageCacheDiv = document.querySelector(".image-cache");
+
+  let sprites = ["blue_slime"];
+
+  let dirPath = "/static/images/png/";
+
+  let animationCount = 6;
+
+  for (var sprite of sprites) {
+    let spritePath = dirPath + sprite + "/";
+
+    for (var imgType of ["idle", "moving"]) {
+      // "/static/images/png/blue_slime/idle/"
+      let typePath = spritePath + imgType + "/";
+
+      for (var i = 1; i < animationCount + 1; i++) {
+        let imgPath = typePath + i + ".png";
+        let img = document.createElement("img");
+        img.src = imgPath;
+        imageCacheDiv.appendChild(img);
+      }
+    }
+  }
+}
+
 function createEnemy(x, y, map, additionalClass, hitpoints=1) {
   let enemyDiv = document.createElement("span");
   enemyDiv.className = "enemy";
@@ -103,46 +132,27 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
 
   enemyDiv.setAttribute("health", hitpoints);
 
-  let mainDirPath = "/static/images/png/blue_slime/";
-  let idleDirPath = mainDirPath + "idle/";
-  let movingDirPath = mainDirPath + "moving/";
-
   let imageCount = 6;
-
   let frameNumber = 1;
+
+  let mainDirPath = "/static/images/png/blue_slime/";
+
   enemyDiv.setAttribute("framenumber", frameNumber);
   enemyDiv.setAttribute("framecount", imageCount);
+  enemyDiv.setAttribute("imagespath", mainDirPath);
 
-  for (var i=1; i < imageCount + 1; i++) {
-    // Idle:
-    let idleImagePath = idleDirPath + i + ".png";
-    
-    let idleImage = document.createElement("img");
-    idleImage.className = "enemy-frame";
-    idleImage.classList.add("frame-idle");
+  // instead use one image, and change the source. Have the image somewhere on the page so it doesn't 
+  // need to be collected
 
-    if (i != frameNumber) {
-      idleImage.classList.add("frame-hidden");
-    } else {
-      idleImage.classList.add("frame-displayed");
-    }
 
-    idleImage.src = idleImagePath;
-    enemyDiv.appendChild(idleImage);
+  let idleDirPath = mainDirPath + "idle/";
 
-    // Moving Image
+  let imagePath = idleDirPath + "1" + ".png";
+  let image = document.createElement("img");
+  image.className = "enemy-frame";
+  image.src = imagePath;
+  enemyDiv.appendChild(image);
 
-    let movingImagePath = movingDirPath + i + ".png";
-    
-    let movingImage = document.createElement("img");
-    movingImage.className = "enemy-frame";
-    movingImage.classList.add("frame-moving");
-
-    movingImage.classList.add("frame-hidden");
-
-    movingImage.src = movingImagePath;
-    enemyDiv.appendChild(movingImage);
-  }
   map.appendChild(enemyDiv);
 }
 
@@ -400,7 +410,7 @@ function animate(obj, moving) {
   let frameNumber = Number(obj.getAttribute("framenumber"));
   let frameCount = Number(obj.getAttribute("framecount"));
 
-  let nextFrame = -1;
+  let nextFrame;
 
   if (frameNumber == frameCount) {
     nextFrame = 1;
@@ -408,24 +418,18 @@ function animate(obj, moving) {
     nextFrame = frameNumber + 1;
   }
 
-  /// obj.children should be based on moving
-  let children;
+  // Set new src
+  let baseImagePath = obj.getAttribute("imagespath");
+  let statusString;
 
   if (moving) {
-    children = obj.querySelectorAll(".frame-moving");
+    statusString = "moving/"
   } else {
-    children = obj.querySelectorAll(".frame-idle");
+    statusString = "idle/"
   }
 
-  let currentImage = obj.querySelector(".frame-displayed");
-  let nextImage = children[nextFrame - 1];
-
-  // change below to set any frames that are visible to hidden
-  currentImage.classList.add("frame-hidden");
-  currentImage.classList.remove("frame-displayed");
-
-  nextImage.classList.add("frame-displayed");
-  nextImage.classList.remove("frame-hidden");
+  let image = obj.querySelector("img");
+  image.src = baseImagePath + statusString + nextFrame + ".png";
 
   obj.setAttribute("framenumber", nextFrame);
 }
