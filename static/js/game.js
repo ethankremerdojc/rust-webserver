@@ -46,7 +46,7 @@ fetch(request)
 function createBaseSetup() {
   createPlayer(332, 368, map);
 
-  initializeEnemyImages();
+  initializeImages();
 
   createEnemy(400, 120, map, "blue", 3);
   // createEnemy(120, 170, map, "blue", 2);
@@ -102,13 +102,13 @@ function createPlayer(x, y, map) {
   weaponBox.appendChild(bow);
 }
 
-function initializeEnemyImages() {
+function initializeImages() {
+
+  // enemies
+
   let imageCacheDiv = document.querySelector(".image-cache");
-
   let sprites = ["blue_slime"]; // , "green_slime"
-
   let dirPath = "/static/images/png/";
-
   let animationCount = 6;
 
   for (var sprite of sprites) {
@@ -126,6 +126,10 @@ function initializeEnemyImages() {
       }
     }
   }
+
+  let arrowImage = document.createElement("img");
+  arrowImage.src = "/static/images/png/arrow.png";
+  imageCacheDiv.appendChild(arrowImage);
 }
 
 function createEnemy(x, y, map, additionalClass, hitpoints=1) {
@@ -213,7 +217,7 @@ function useWeapon(e, cname) {
     let x = e.clientX - offset.left;
     let y = offset.bottom - e.clientY;
 
-    summonArrow(playerX, playerY, x , y);
+    summonArrow(playerX, playerY, x , y, angle);
 
     setTimeout(() => {
       weapon.style.display = "none"; 
@@ -228,30 +232,46 @@ function useWeapon(e, cname) {
 }
 
 function moveArrow(arrow, dx, dy, speed) {
-  arrow.style.left = (Number(arrow.style.left.replace("px", "")) + (dx * speed)) + "px";
-  arrow.style.bottom = (Number(arrow.style.bottom.replace("px", "")) + (dy * speed)) + "px";
 
-  if (checkIfCollidedWithClass(arrow, "water") ) {
-    console.log("COLLIDES")
+  let newX = Number(arrow.style.left.replace("px", "")) + (dx * speed);
+  let newY = Number(arrow.style.bottom.replace("px", "")) + (dy * speed);
+
+  arrow.style.left = newX + "px";
+  arrow.style.bottom = newY + "px";
+
+  // check if leaves the map, or collides with anything
+
+  // if not touching water or land, this arrow should get deleted.
+  if (!(checkIfCollidedWithClass(arrow, "water") || checkIfCollidedWithClass(arrow, "dirt"))) {
+    setTimeout(() => map.removeChild(arrow), 20);
+    return
   }
 
-  setTimeout(() => moveArrow(arrow, dx, dy, speed), 12);
+  if (checkIfCollidedWithClass(arrow, "enemy") || checkIfCollidedWithClass(arrow, "tree") || checkIfCollidedWithClass(arrow, "rock")) {
+    setTimeout(() => map.removeChild(arrow), 27);
+    return
+  } else {
+    setTimeout(() => moveArrow(arrow, dx, dy, speed), 12);
+  }
 }
 
-function summonArrow(startX, startY, mouseX, mouseY) {
+function summonArrow(startX, startY, mouseX, mouseY, angle) {
   console.log(startX, startY, mouseX, mouseY)
+
 
   let xdif = mouseX - startX;
   let ydif = mouseY - startY;
 
   let length = Math.sqrt(xdif*xdif + ydif*ydif);
 
-  let speed = 1;
+  let speed = 3;
 
   let dx = xdif / length;
   let dy = ydif / length;
 
-  let arrow = document.createElement("span");
+  let arrow = document.createElement("img");
+  arrow.src = "/static/images/png/arrow.png";
+  arrow.style.transform = `rotate(${angle}rad)`;
 
   arrow.style.left = startX + "px";
   arrow.style.bottom = startY + "px";
@@ -261,6 +281,7 @@ function summonArrow(startX, startY, mouseX, mouseY) {
   moveArrow(arrow, dx, dy, speed);
 }
 
+//todo need to make sure you can't use two weapons at once.
 function useSpear(e) {useWeapon(e, "spear")}
 function useBow(e) {useWeapon(e, "bow")}
 
@@ -388,6 +409,14 @@ function moveEnemy(enemy, even){ // returns bool moving
     return true
   } 
 
+  if (checkIfCollidedWithClass(enemy, "spear")) {
+    removeHealthOrKill(enemy, 3)
+  }
+
+  if (checkIfCollidedWithClass(enemy, "sword")) {
+    removeHealthOrKill(enemy, 2)
+  }
+
   enemy.style.left = leftPx;
   if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "enemy")) {
     enemy.style.left = initial_left;
@@ -398,14 +427,6 @@ function moveEnemy(enemy, even){ // returns bool moving
   if (checkIfCollidedWithClass(enemy, "rock") || checkIfCollidedWithClass(enemy, "tree") || checkIfCollidedWithClass(enemy, "enemy")) {
     enemy.style.bottom = initial_bottom;
     bottomMoving = false;
-  }
-
-  if (checkIfCollidedWithClass(enemy, "spear")) {
-    removeHealthOrKill(enemy, 3)
-  }
-
-  if (checkIfCollidedWithClass(enemy, "sword")) {
-    removeHealthOrKill(enemy, 2)
   }
 
   if (leftMoving || bottomMoving) { return true } else { return false }
@@ -456,6 +477,10 @@ function doTick(even=false) {
   
   for (let enemy of enemies) {
     let moving = moveEnemy(enemy, even);
+  
+    if (checkIfCollidedWithClass(enemy, "arrow")) {
+      removeHealthOrKill(enemy, 1)
+    }
 
     if (even) {
       animate(enemy, moving);

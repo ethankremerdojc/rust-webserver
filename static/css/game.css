@@ -106,9 +106,8 @@ body {
 }
 
 .arrow {
-    background-color: red;
     position: absolute;
     z-index: 100;
-    width: 10px;
-    height: 10px;
+    width: 5px;
+    height: 18px;
 }
