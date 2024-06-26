@@ -58,8 +58,7 @@ body {
     top:  4px;
     left: 4px;
 
-    transform: rotate(0rad);
-    transition: transform 330ms ease;
+
 }
 
 .spear {
@@ -71,6 +70,13 @@ body {
     transition: bottom 270ms ease;
     display: none;
 }
+
+/* TODO
+    transform: rotate(0rad);
+    transition: transform 330ms ease;
+
+    need to add above to a specific sword box.
+*/
 
 .sword {
     height: 40px;

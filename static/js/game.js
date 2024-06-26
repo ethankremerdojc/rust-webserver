@@ -224,10 +224,17 @@ function useWeapon(e, cname) {
 function useSpear(e) {useWeapon(e, "spear")}
 function useSword(e) {useWeapon(e, "sword")}
 
+function overwriteRightClick(event) {
+  if (event.button == 2) {
+    event.preventDefault(); // Prevent the default right-click behavior
+    useSword(event);
+    return false;
+  }
+}
+
 map.addEventListener('click',
   (e) => {
-    // useSpear(e)
-    useSword(e);
+    useSpear(e)
   },
 false);
 
