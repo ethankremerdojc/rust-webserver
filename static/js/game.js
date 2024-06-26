@@ -49,11 +49,11 @@ function createBaseSetup() {
   initializeEnemyImages();
 
   createEnemy(400, 120, map, "blue", 3);
-  createEnemy(120, 170, map, "blue", 2);
-  createEnemy(220, 420, map, "blue", 2);
-  createEnemy(520, 520, map, "blue", 7);
-  createEnemy(420, 370, map, "blue", 7);
-  createEnemy(320, 120, map, "blue", 7);
+  // createEnemy(120, 170, map, "blue", 2);
+  // createEnemy(220, 420, map, "blue", 2);
+  // createEnemy(520, 520, map, "blue", 7);
+  // createEnemy(420, 370, map, "blue", 7);
+  // createEnemy(320, 120, map, "blue", 7);
 }
 
 function getTileParameters(cell) {
@@ -96,10 +96,10 @@ function createPlayer(x, y, map) {
   spear.className = "spear";
   weaponBox.appendChild(spear);
 
-  let sword = document.createElement("img");
-  sword.src = "/static/images/png/sword.png";
-  sword.className = "sword";
-  weaponBox.appendChild(sword);
+  let bow = document.createElement("img");
+  bow.src = "/static/images/png/bow.png";
+  bow.className = "bow";
+  weaponBox.appendChild(bow);
 }
 
 function initializeEnemyImages() {
@@ -189,13 +189,10 @@ function useWeapon(e, cname) {
   let playerCenter = getCenter(player);
   const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x) + (Math.PI / 2);
 
+  weaponBox.style.transform = `rotate(${angle}rad)`; //  - 1
   weapon.style.display = "block";
   
-  //todo change how this func works based on weapon parameters
-  
-  // style.bottom is to move weapon in and out. This won't be applicable for weapons other than spears
   if (cname == "spear") {
-    weaponBox.style.transform = `rotate(${angle}rad)`; //  - 1
     setTimeout(() => {weapon.style.bottom = "16px"}, 4);
     setTimeout(() => {weapon.style.bottom = "-8px"}, 314);
 
@@ -206,28 +203,71 @@ function useWeapon(e, cname) {
 
     setTimeout(() => { weapon.style.opacity = "1"; }, 700)
 
-  } else if (cname == "sword") {
-    let pi = Math.PI;
-    weaponBox.style.transform = `rotate(${2*pi}rad)`; //  - 1
+  } else if (cname == "bow") {
+    let playerX = Number(player.style.left.replace("px", ""));
+    let playerY = Number(player.style.bottom.replace("px", ""));
+    console.log(playerX, playerY)
+
+    var offset = document.querySelector('#map').getBoundingClientRect();
+
+    let x = e.clientX - offset.left;
+    let y = offset.bottom - e.clientY;
+
+    summonArrow(playerX, playerY, x , y);
 
     setTimeout(() => {
       weapon.style.display = "none"; 
       weapon.style.opacity = "0"; 
-      weaponBox.style.transform = `rotate(0rad)`
-    }, 300)
+    }, 490)
 
-    setTimeout(() => { weapon.style.opacity = "1"; }, 500)
+    // summon arrow
+
+    setTimeout(() => { weapon.style.opacity = "1"; }, 700)
   }
 
 }
 
+function moveArrow(arrow, dx, dy, speed) {
+  arrow.style.left = (Number(arrow.style.left.replace("px", "")) + (dx * speed)) + "px";
+  arrow.style.bottom = (Number(arrow.style.bottom.replace("px", "")) + (dy * speed)) + "px";
+
+  if (checkIfCollidedWithClass(arrow, "water") ) {
+    console.log("COLLIDES")
+  }
+
+  setTimeout(() => moveArrow(arrow, dx, dy, speed), 12);
+}
+
+function summonArrow(startX, startY, mouseX, mouseY) {
+  console.log(startX, startY, mouseX, mouseY)
+
+  let xdif = mouseX - startX;
+  let ydif = mouseY - startY;
+
+  let length = Math.sqrt(xdif*xdif + ydif*ydif);
+
+  let speed = 1;
+
+  let dx = xdif / length;
+  let dy = ydif / length;
+
+  let arrow = document.createElement("span");
+
+  arrow.style.left = startX + "px";
+  arrow.style.bottom = startY + "px";
+  arrow.className = "arrow";
+  map.appendChild(arrow);
+
+  moveArrow(arrow, dx, dy, speed);
+}
+
 function useSpear(e) {useWeapon(e, "spear")}
-function useSword(e) {useWeapon(e, "sword")}
+function useBow(e) {useWeapon(e, "bow")}
 
 function overwriteRightClick(event) {
   if (event.button == 2) {
     event.preventDefault(); // Prevent the default right-click behavior
-    useSword(event);
+    useBow(event);
     return false;
   }
 }
