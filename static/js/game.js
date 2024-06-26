@@ -95,6 +95,11 @@ function createPlayer(x, y, map) {
   spear.src = "/static/images/png/spear.png";
   spear.className = "spear";
   weaponBox.appendChild(spear);
+
+  let sword = document.createElement("img");
+  sword.src = "/static/images/png/sword.png";
+  sword.className = "sword";
+  weaponBox.appendChild(sword);
 }
 
 function initializeEnemyImages() {
@@ -135,7 +140,7 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
   let imageCount = 6;
   let frameNumber = 1;
 
-  let mainDirPath = "/static/images/png/blue_slime/";
+  let mainDirPath = "/static/images/png/blue_slime/"; // green_slime
 
   enemyDiv.setAttribute("framenumber", frameNumber);
   enemyDiv.setAttribute("framecount", imageCount);
@@ -183,27 +188,47 @@ function useWeapon(e, cname) {
   
   let playerCenter = getCenter(player);
   const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x) + (Math.PI / 2);
-  weaponBox.style.transform = `rotate(${angle}rad)`;
-  
+
   weapon.style.display = "block";
-
+  
   //todo change how this func works based on weapon parameters
-
+  
   // style.bottom is to move weapon in and out. This won't be applicable for weapons other than spears
-  setTimeout(() => {weapon.style.bottom = "16px"}, 4);
-  setTimeout(() => {weapon.style.bottom = "-8px"}, 314);
+  if (cname == "spear") {
+    weaponBox.style.transform = `rotate(${angle}rad)`; //  - 1
+    setTimeout(() => {weapon.style.bottom = "16px"}, 4);
+    setTimeout(() => {weapon.style.bottom = "-8px"}, 314);
 
-  // Opacity on weapon is used to do use time
-  setTimeout(() => { weapon.style.display = "none"; weapon.style.opacity = "0"; }, 490)
-  setTimeout(() => { weapon.style.opacity = "1"; }, 700)
+    setTimeout(() => {
+      weapon.style.display = "none"; 
+      weapon.style.opacity = "0"; 
+    }, 490)
+
+    setTimeout(() => { weapon.style.opacity = "1"; }, 700)
+
+  } else if (cname == "sword") {
+    let pi = Math.PI;
+    weaponBox.style.transform = `rotate(${2*pi}rad)`; //  - 1
+
+    setTimeout(() => {
+      weapon.style.display = "none"; 
+      weapon.style.opacity = "0"; 
+      weaponBox.style.transform = `rotate(0rad)`
+    }, 300)
+
+    setTimeout(() => { weapon.style.opacity = "1"; }, 500)
+  }
+
 }
 
-function useSpear(e) {
-  useWeapon(e, "spear");
-}
+function useSpear(e) {useWeapon(e, "spear")}
+function useSword(e) {useWeapon(e, "sword")}
 
 map.addEventListener('click',
-  (e) => {useSpear(e)},
+  (e) => {
+    // useSpear(e)
+    useSword(e);
+  },
 false);
 
 function collides(obj1, obj2) {
@@ -329,17 +354,21 @@ function moveEnemy(enemy, even){ // returns bool moving
   }
 
   if (checkIfCollidedWithClass(enemy, "spear")) {
-    removeHealthOrKill(enemy)
+    removeHealthOrKill(enemy, 3)
+  }
+
+  if (checkIfCollidedWithClass(enemy, "sword")) {
+    removeHealthOrKill(enemy, 2)
   }
 
   if (leftMoving || bottomMoving) { return true } else { return false }
 }
 
-function removeHealthOrKill(enemy) {
+function removeHealthOrKill(enemy, damage=1) {
   enemy.classList.add("hit");
   let enemy_health = Number(enemy.getAttribute("health"));
-  enemy_health -= 1;
-  if (enemy_health == 0) { map.removeChild(enemy); }
+  enemy_health -= damage;
+  if (enemy_health <= 0) { map.removeChild(enemy); }
   enemy.setAttribute("health", enemy_health);
   setTimeout(() => {enemy.classList.remove("hit")}, 400)
 }
@@ -361,11 +390,14 @@ function checkIfCollidedWithClass(element, c) {
   return false
 }
 
+var isPaused = false;
+
 function doTick(even=false) {
-  if (!document.hasFocus()) {
+  if (!document.hasFocus() || isPaused) {
+
     keys = [];
-    //todo show pause screen here
-    setTimeout(doTick, 20);
+    // todo show pause screen here
+    setTimeout(doTick, 27);
     return
   }
 

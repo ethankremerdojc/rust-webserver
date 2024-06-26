@@ -57,6 +57,9 @@ body {
     position: relative;
     top:  4px;
     left: 4px;
+
+    transform: rotate(0rad);
+    transition: transform 330ms ease;
 }
 
 .spear {
@@ -66,6 +69,16 @@ body {
     left: 2px;
     bottom: -8px;
     transition: bottom 270ms ease;
+    display: none;
+}
+
+.sword {
+    height: 40px;
+    width: 11px;
+    position: absolute;
+    left: 2px;
+    bottom: 12px;
+
     display: none;
 }
 
