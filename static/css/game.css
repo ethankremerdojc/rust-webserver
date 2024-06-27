@@ -1,5 +1,7 @@
 body {
     margin: 0;
+    min-width: 100vw;
+    min-height: 100vh;
 }
 
 * {
@@ -10,6 +12,39 @@ body {
     -webkit-user-select: none;
     -ms-user-select: none;
 }
+
+.pause-container {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    display: none;
+}
+
+.pause-menu {
+    z-index: 99999;
+    width: 400px;
+    height: 200px;
+    background-color: lightblue;
+}
+
+.pause-menu button {
+    cursor: pointer;
+}
+
+
+
+
+
+
+
+
+
 
 #map {
     position: relative;

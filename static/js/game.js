@@ -2,7 +2,8 @@ const TILE_SIZE = 36;
 let MAP_HEIGHT = -1;
 let MAP_WIDTH = -1
 
-const request = new Request("/api/map_generation", {method: "GET",}); // ?seed=29
+const request = new Request(
+  "/api/map_generation", {method: "GET",}); // ?seed=29
 
 let map = document.getElementById("map");;
 
@@ -36,6 +37,10 @@ fetch(request)
 
     MAP_HEIGHT = response.cells.length * TILE_SIZE;
     MAP_WIDTH = response.cells[0].length * TILE_SIZE;
+
+    map.style.width = MAP_WIDTH + "px";
+    map.style.height = MAP_HEIGHT + "px";
+
     createBaseSetup();
     doTick();
   })
@@ -49,11 +54,11 @@ function createBaseSetup() {
   initializeImages();
 
   createEnemy(400, 120, map, "blue", 3);
-  // createEnemy(120, 170, map, "blue", 2);
-  // createEnemy(220, 420, map, "blue", 2);
-  // createEnemy(520, 520, map, "blue", 7);
-  // createEnemy(420, 370, map, "blue", 7);
-  // createEnemy(320, 120, map, "blue", 7);
+  createEnemy(120, 170, map, "blue", 2);
+  createEnemy(220, 420, map, "blue", 4);
+  createEnemy(520, 520, map, "blue", 6);
+  createEnemy(420, 370, map, "blue", 7);
+  createEnemy(320, 120, map, "blue", 11);
 }
 
 function getTileParameters(cell) {
@@ -103,10 +108,15 @@ function createPlayer(x, y, map) {
 }
 
 function initializeImages() {
-
-  // enemies
-
   let imageCacheDiv = document.querySelector(".image-cache");
+  initializeEnemyImages(imageCacheDiv);
+
+  let arrowImage = document.createElement("img");
+  arrowImage.src = "/static/images/png/arrow.png";
+  imageCacheDiv.appendChild(arrowImage);
+}
+
+function initializeEnemyImages(imageCacheDiv) {
   let sprites = ["blue_slime"]; // , "green_slime"
   let dirPath = "/static/images/png/";
   let animationCount = 6;
@@ -126,10 +136,6 @@ function initializeImages() {
       }
     }
   }
-
-  let arrowImage = document.createElement("img");
-  arrowImage.src = "/static/images/png/arrow.png";
-  imageCacheDiv.appendChild(arrowImage);
 }
 
 function createEnemy(x, y, map, additionalClass, hitpoints=1) {
@@ -183,7 +189,10 @@ function getCenter(element) {
   return {x: left + width / 2, y: top + height / 2}
 }
 
+var weaponInUse = false;
+
 function useWeapon(e, cname) {
+  if (!weaponInUse) { weaponInUse = true; } else { return }
   let player = document.getElementById("player");
   let weaponBox = player.querySelector(".weapon-box");
   let weapon = weaponBox.querySelector("." + cname);
@@ -193,42 +202,43 @@ function useWeapon(e, cname) {
   let playerCenter = getCenter(player);
   const angle = Math.atan2(e.clientY - playerCenter.y, e.clientX - playerCenter.x) + (Math.PI / 2);
 
-  weaponBox.style.transform = `rotate(${angle}rad)`; //  - 1
+  weaponBox.style.transform = `rotate(${angle}rad)`;
   weapon.style.display = "block";
   
   if (cname == "spear") {
-    setTimeout(() => {weapon.style.bottom = "16px"}, 4);
-    setTimeout(() => {weapon.style.bottom = "-8px"}, 314);
-
-    setTimeout(() => {
-      weapon.style.display = "none"; 
-      weapon.style.opacity = "0"; 
-    }, 490)
-
-    setTimeout(() => { weapon.style.opacity = "1"; }, 700)
-
+    handleSpearUse(weapon);
   } else if (cname == "bow") {
-    let playerX = Number(player.style.left.replace("px", ""));
-    let playerY = Number(player.style.bottom.replace("px", ""));
-    console.log(playerX, playerY)
-
-    var offset = document.querySelector('#map').getBoundingClientRect();
-
-    let x = e.clientX - offset.left;
-    let y = offset.bottom - e.clientY;
-
-    summonArrow(playerX, playerY, x , y, angle);
-
-    setTimeout(() => {
-      weapon.style.display = "none"; 
-      weapon.style.opacity = "0"; 
-    }, 490)
-
-    // summon arrow
-
-    setTimeout(() => { weapon.style.opacity = "1"; }, 700)
+    handleBowUse(e, player, weapon, angle);
   }
+}
 
+function handleBowUse(e, player, weapon, angle) {
+  let playerX = Number(player.style.left.replace("px", ""));
+  let playerY = Number(player.style.bottom.replace("px", ""));
+  var offset = document.querySelector('#map').getBoundingClientRect();
+  let x = e.clientX - offset.left;
+  let y = offset.bottom - e.clientY;
+
+  summonArrow(playerX, playerY, x , y, angle);
+
+  setTimeout(() => {
+    weapon.style.display = "none"; 
+    weapon.style.opacity = "0"; 
+  }, 490)
+
+  setTimeout(() => { weapon.style.opacity = "1"; weaponInUse = false }, 700)
+}
+
+function handleSpearUse(weapon) {
+  setTimeout(() => {weapon.style.bottom = "16px"}, 4);
+  setTimeout(() => {weapon.style.bottom = "-8px"}, 314);
+
+  setTimeout(() => {
+    weapon.style.display = "none"; 
+    weapon.style.opacity = "0"; 
+  }, 490)
+
+  setTimeout(() => { weapon.style.opacity = "1"; weaponInUse = false }, 700)
 }
 
 function moveArrow(arrow, dx, dy, speed) {
@@ -256,9 +266,6 @@ function moveArrow(arrow, dx, dy, speed) {
 }
 
 function summonArrow(startX, startY, mouseX, mouseY, angle) {
-  console.log(startX, startY, mouseX, mouseY)
-
-
   let xdif = mouseX - startX;
   let ydif = mouseY - startY;
 
@@ -281,23 +288,8 @@ function summonArrow(startX, startY, mouseX, mouseY, angle) {
   moveArrow(arrow, dx, dy, speed);
 }
 
-//todo need to make sure you can't use two weapons at once.
 function useSpear(e) {useWeapon(e, "spear")}
 function useBow(e) {useWeapon(e, "bow")}
-
-function overwriteRightClick(event) {
-  if (event.button == 2) {
-    event.preventDefault(); // Prevent the default right-click behavior
-    useBow(event);
-    return false;
-  }
-}
-
-map.addEventListener('click',
-  (e) => {
-    useSpear(e)
-  },
-false);
 
 function collides(obj1, obj2) {
   let rect1 = obj1.getBoundingClientRect();
@@ -383,31 +375,20 @@ function moveEnemy(enemy, even){ // returns bool moving
   let delta_y = 0;
   let delta_x = 0;
 
-  if (player_y > enemy_y) {
-    delta_y = 1;
-  }
-  if (player_y < enemy_y) {
-    delta_y = -1;
-  }
-  if (player_x > enemy_x) {
-    delta_x = 1;
-  }
-  if (player_x < enemy_x) {
-    delta_x = -1;
-  }
+  if (player_y > enemy_y) { delta_y = 1; }
+  if (player_y < enemy_y) { delta_y = -1; }
+  if (player_x > enemy_x) { delta_x = 1; }
+  if (player_x < enemy_x) { delta_x = -1; }
 
   let bottomPx = (enemy_y + delta_y) + "px";
   let leftPx = (enemy_x + delta_x) + "px";
 
   let leftMoving = true;
   let bottomMoving = true;
-
   let initial_left = enemy.style.left;
   let initial_bottom = enemy.style.bottom;
 
-  if (checkIfCollidedWithClass(enemy, "water") && even) {
-    return true
-  } 
+  if (checkIfCollidedWithClass(enemy, "water") && even) { return true } // 50% of the time we want to do nothing to slow down
 
   if (checkIfCollidedWithClass(enemy, "spear")) {
     removeHealthOrKill(enemy, 3)
@@ -460,11 +441,52 @@ function checkIfCollidedWithClass(element, c) {
 
 var isPaused = false;
 
+let continueButton = document.getElementById("continue");
+continueButton.onclick = () => {
+  isPaused = false;
+  let pauseContainer = document.querySelector(".pause-container");
+  pauseContainer.style.display = "none";
+}
+
+map.addEventListener('click',
+  (e) => {
+    if (!isPaused) {
+      useSpear(e)
+    }
+  },
+false);
+
+function overwriteRightClick(event) {
+  if (isPaused) {
+    event.preventDefault(); // Prevent the default right-click behavior
+    return false;
+  }
+
+  if (event.button == 2) {
+    event.preventDefault(); // Prevent the default right-click behavior
+    useBow(event);
+    return false;
+  }
+}
+
 function doTick(even=false) {
+  let pauseContainer = document.querySelector(".pause-container");
+
   if (!document.hasFocus() || isPaused) {
+    isPaused = true;
+
+    if (pauseContainer.style.display == "none") {
+      pauseContainer.style.display = "flex"
+    }
 
     keys = [];
-    // todo show pause screen here
+    setTimeout(doTick, 27);
+    return
+  }
+
+  if(keys["Escape"]){
+    pauseContainer.style.display = "flex";
+    isPaused = true;
     setTimeout(doTick, 27);
     return
   }
