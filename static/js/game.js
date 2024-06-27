@@ -1,53 +1,3 @@
-const TILE_SIZE = 36;
-let MAP_HEIGHT = -1;
-let MAP_WIDTH = -1
-
-const request = new Request(
-  "/api/map_generation", {method: "GET",}); // ?seed=29
-
-let map = document.getElementById("map");;
-
-fetch(request)
-  .then((response) => {
-    if (response.status === 200) {
-      return response.json();
-    } else {
-      throw new Error("Something went wrong on API server!");
-    }
-  })
-  .then((response) => {
-    // console.log(response);
-    response.cells.forEach(row => {
-        let xrow = document.createElement("span");
-        xrow.className = "tilerow";
-
-        row.forEach(cell => {
-            let ycol = document.createElement("span");
-            ycol.className = "tile";
-
-            let cellParams = getTileParameters(cell);
-            ycol.classList.add(cellParams["class"]);
-            ycol.style.background = cellParams["background"];
-            xrow.appendChild(ycol);
-        })
-
-        map.appendChild(xrow);
-
-    });
-
-    MAP_HEIGHT = response.cells.length * TILE_SIZE;
-    MAP_WIDTH = response.cells[0].length * TILE_SIZE;
-
-    map.style.width = MAP_WIDTH + "px";
-    map.style.height = MAP_HEIGHT + "px";
-
-    createBaseSetup();
-    doTick();
-  })
-  .catch((error) => {
-    console.error(error);
-  });
-
 function createBaseSetup() {
   createPlayer(332, 368, map);
 
@@ -170,26 +120,10 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
   map.appendChild(enemyDiv);
 }
 
-var keys = [];
-
-window.addEventListener("keydown",
-  function(e){
-      keys[e.key] = true;
-  },
-false);
-
-window.addEventListener('keyup',
-  function(e){
-      keys[e.key] = false;
-  },
-false);
-
 function getCenter(element) {
   const {left, top, width, height} = element.getBoundingClientRect();
   return {x: left + width / 2, y: top + height / 2}
 }
-
-var weaponInUse = false;
 
 function useWeapon(e, cname) {
   if (!weaponInUse) { weaponInUse = true; } else { return }
@@ -210,6 +144,14 @@ function useWeapon(e, cname) {
   } else if (cname == "bow") {
     handleBowUse(e, player, weapon, angle);
   }
+}
+
+function useSpear(e) {
+  useWeapon(e, "spear")
+}
+
+function useBow(e) {
+  useWeapon(e, "bow")
 }
 
 function handleBowUse(e, player, weapon, angle) {
@@ -287,9 +229,6 @@ function summonArrow(startX, startY, mouseX, mouseY, angle) {
 
   moveArrow(arrow, dx, dy, speed);
 }
-
-function useSpear(e) {useWeapon(e, "spear")}
-function useBow(e) {useWeapon(e, "bow")}
 
 function collides(obj1, obj2) {
   let rect1 = obj1.getBoundingClientRect();
@@ -415,10 +354,12 @@ function moveEnemy(enemy, even){ // returns bool moving
 
 function removeHealthOrKill(enemy, damage=1) {
   enemy.classList.add("hit");
+
   let enemy_health = Number(enemy.getAttribute("health"));
   enemy_health -= damage;
   if (enemy_health <= 0) { map.removeChild(enemy); }
   enemy.setAttribute("health", enemy_health);
+
   setTimeout(() => {enemy.classList.remove("hit")}, 400)
 }
 
@@ -426,48 +367,14 @@ function checkIfCollidedWithClass(element, c) {
   let objs = document.getElementsByClassName(c);
 
   for (let obj of objs) {
-
-    if (obj == element) {
-      continue
-    }
-
-    if (collides(element, obj)) {
-      return true
-    }
+    if (obj == element) { continue }
+    if (collides(element, obj)) { return true }
   }
 
   return false
 }
 
-var isPaused = false;
 
-let continueButton = document.getElementById("continue");
-continueButton.onclick = () => {
-  isPaused = false;
-  let pauseContainer = document.querySelector(".pause-container");
-  pauseContainer.style.display = "none";
-}
-
-map.addEventListener('click',
-  (e) => {
-    if (!isPaused) {
-      useSpear(e)
-    }
-  },
-false);
-
-function overwriteRightClick(event) {
-  if (isPaused) {
-    event.preventDefault(); // Prevent the default right-click behavior
-    return false;
-  }
-
-  if (event.button == 2) {
-    event.preventDefault(); // Prevent the default right-click behavior
-    useBow(event);
-    return false;
-  }
-}
 
 function doTick(even=false) {
   let pauseContainer = document.querySelector(".pause-container");
@@ -566,3 +473,86 @@ function animate(obj, moving) {
 
   obj.setAttribute("framenumber", nextFrame);
 }
+
+function unpause() {
+  isPaused = false;
+  let pauseContainer = document.querySelector(".pause-container");
+  pauseContainer.style.display = "none";
+}
+
+const TILE_SIZE = 36;
+let MAP_HEIGHT = -1;
+let MAP_WIDTH = -1
+
+var weaponInUse = false;
+var isPaused = false;
+
+let map = document.getElementById("map");
+
+const request = new Request("/api/map_generation", {method: "GET",}); // ?seed=29
+fetch(request)
+  .then((response) => {
+    if (response.status === 200) {
+      return response.json();
+    } else {
+      throw new Error("Something went wrong on API server!");
+    }
+  })
+  .then((response) => {
+    response.cells.forEach(row => {
+        let xrow = document.createElement("span");
+        xrow.className = "tilerow";
+
+        row.forEach(cell => {
+            let ycol = document.createElement("span");
+            ycol.className = "tile";
+
+            let cellParams = getTileParameters(cell);
+            ycol.classList.add(cellParams["class"]);
+            ycol.style.background = cellParams["background"];
+            xrow.appendChild(ycol);
+        })
+
+        map.appendChild(xrow);
+
+    });
+
+    MAP_HEIGHT = response.cells.length * TILE_SIZE;
+    MAP_WIDTH = response.cells[0].length * TILE_SIZE;
+
+    map.style.width = MAP_WIDTH + "px";
+    map.style.height = MAP_HEIGHT + "px";
+
+    createBaseSetup();
+    doTick();
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+
+var keys = [];
+
+window.addEventListener("keydown",
+  function(e){ keys[e.key] = true; }, false);
+
+window.addEventListener('keyup',
+  function(e){ keys[e.key] = false; }, false);
+
+map.addEventListener('click',
+  (e) => { if (!isPaused) { useSpear(e) } }, false);
+
+function overwriteRightClick(event) {
+  if (isPaused) {
+    event.preventDefault(); // Prevent the default right-click behavior
+    return false;
+  }
+
+  if (event.button == 2) {
+    event.preventDefault(); // Prevent the default right-click behavior
+    useBow(event);
+    return false;
+  }
+}
+
+let continueButton = document.getElementById("continue");
+continueButton.onclick = unpause;
