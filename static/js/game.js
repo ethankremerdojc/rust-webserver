@@ -374,8 +374,6 @@ function checkIfCollidedWithClass(element, c) {
   return false
 }
 
-
-
 function doTick(even=false) {
   let pauseContainer = document.querySelector(".pause-container");
 
@@ -528,7 +526,7 @@ fetch(request)
   })
   .catch((error) => {
     console.error(error);
-  });
+});
 
 var keys = [];
 
