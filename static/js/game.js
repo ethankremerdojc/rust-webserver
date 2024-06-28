@@ -563,7 +563,7 @@ let cells = null;
 let initialSeed = null;
 let seedState = null;
 
-const request = new Request("/api/map_generation", {method: "GET",}); // ?seed=29
+const request = new Request("/api/map_generation?seed=294&seedState=1992&round=4", {method: "GET",}); // ?seed=29
 fetch(request)
   .then((response) => {
     if (response.status === 200) {

@@ -127,8 +127,8 @@ fn static_file(request_type: &str, uri: &str) -> (String, String) {
 
 fn api_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) {
 
-    if uri == "/api/map_generation" {
-        map_generation()
+    if uri.starts_with("/api/map_generation") {
+        map_generation(uri)
     } else if uri == "/api/round_details" {
         // round_details()
         todo!()
@@ -138,8 +138,20 @@ fn api_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) {
     }
 }
 
-fn map_generation() -> (String, String, Vec<u8>) {
+fn map_generation(uri: &str) -> (String, String, Vec<u8>) {
     let status_line: String = "HTTP/1.1 200 OK".to_string();
+
+    // uri should contain the following:
+    // 1. seed
+    // 2. seedState
+    // 3. round#
+
+    // we will create a game with our initial seed (to initialize all the cells)
+    // to be the same as what the user is seeing
+
+    // then we set the seedstate to whatever the user has (will be different
+    // based on what round they are on) Then generate some new enemies for them
+    // based on the round number and seedstate.
 
     let base_case = game::base_case();
     let map_json = base_case.json();
