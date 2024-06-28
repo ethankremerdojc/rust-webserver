@@ -4,18 +4,16 @@ use std::{
     time::Duration,
     path::Path
 };
-
 use crate::game;
-
-
 
 //TODO 1. Allow browser to send specified seed.
 //TODO 2. Browser send the current game state and round number and current adjusted seed.
 //TODO 3. Let enemies have multiple hitpoints
 
-
-
 pub fn get_request_parameters(request_line: String) -> (String, String) {
+
+    // Get post data
+
     let split_contents: Vec<&str> = request_line.split(" ").collect::<Vec<_>>();
     let request_type: String = String::from(split_contents[0]);
     let uri: String = String::from(split_contents[1]);
@@ -131,6 +129,9 @@ fn api_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) {
 
     if uri == "/api/map_generation" {
         map_generation()
+    } else if uri == "/api/round_details" {
+        // round_details()
+        todo!()
     } else {
         // broken
         todo!()

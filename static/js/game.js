@@ -306,8 +306,8 @@ function moveEnemy(enemy, even){ // returns bool moving
   let player_y = Number(player.style.bottom.replace("px", ""));
   let player_x = Number(player.style.left.replace("px", ""));
 
-  let x_in_range = enemy_x - 200 < player_x && player_x < enemy_x + 200;
-  let y_in_range = enemy_y - 200 < player_y && player_y < enemy_y + 200;
+  let x_in_range = enemy_x - 320 < player_x && player_x < enemy_x + 320;
+  let y_in_range = enemy_y - 320 < player_y && player_y < enemy_y + 320;
 
   if (!(x_in_range && y_in_range)) { return }
 
@@ -374,74 +374,6 @@ function checkIfCollidedWithClass(element, c) {
   return false
 }
 
-function doTick(even=false) {
-  let pauseContainer = document.querySelector(".pause-container");
-
-  if (!document.hasFocus() || isPaused) {
-    isPaused = true;
-
-    if (pauseContainer.style.display == "none") {
-      pauseContainer.style.display = "flex"
-    }
-
-    keys = [];
-    setTimeout(doTick, 27);
-    return
-  }
-
-  if(keys["Escape"]){
-    pauseContainer.style.display = "flex";
-    isPaused = true;
-    setTimeout(doTick, 27);
-    return
-  }
-
-  const player = document.getElementById("player");
-
-  movePlayer(even);
-  
-  let enemies = document.getElementsByClassName("enemy");
-  
-  for (let enemy of enemies) {
-    let moving = moveEnemy(enemy, even);
-  
-    if (checkIfCollidedWithClass(enemy, "arrow")) {
-      removeHealthOrKill(enemy, 1)
-    }
-
-    if (even) {
-      animate(enemy, moving);
-    }
-  }
-
-  if (checkIfCollidedWithClass(player, "enemy") && !player.classList.contains("hit")) {
-    removeHeart(player)
-  }
-
-  let newEven;
-  if (even) {
-    newEven = false
-  } else {
-    newEven = true
-  }
-  
-  setTimeout(() => doTick(newEven), 27);
-}
-
-function removeHeart(player) {
-  player.classList.add("hit");
-
-  let heartsBlock = document.getElementById("hearts");
-  let hearts = heartsBlock.querySelectorAll(".heart");
-
-  if (hearts.length > 0) {
-    let last = hearts[hearts.length - 1];
-    last.parentNode.removeChild(last);
-  }
-
-  setTimeout(() => {player.classList.remove("hit")}, 500);
-}
-
 function animate(obj, moving) {
   // update both idle and moving images for simplicity, then display the one that is relevant based on moving var
 
@@ -472,20 +404,164 @@ function animate(obj, moving) {
   obj.setAttribute("framenumber", nextFrame);
 }
 
+function removeHeartOrKill(player) {
+  player.classList.add("hit");
+
+  let heartsBlock = document.getElementById("hearts");
+  let hearts = heartsBlock.querySelectorAll(".heart");
+
+  let last = hearts[hearts.length - 1];
+  last.parentNode.removeChild(last);
+  if (hearts.length <= 1) {
+    alive = false;
+  } else {
+    setTimeout(() => {player.classList.remove("hit")}, 500);
+  }
+}
+
+function removeAllSprites() {
+  // remove all enemies, projectiles (arrows), and player.
+
+  let enemies = map.querySelectorAll(".enemy");
+  let player = map.querySelector("#player");
+  let arrows = map.querySelectorAll(".arrow");
+
+  for (var enemy of enemies) {
+    map.removeChild(enemy);
+  }
+  map.removeChild(player);
+  for (var arrow of arrows) {
+    map.removeChild(arrow);
+  }
+}
+
+function displayDeathPopup() {
+  map.removeEventListener('click', clickFunc);
+  let deathPopup = document.querySelector(".death-container");
+  deathPopup.style.display = "flex";
+}
+
+function setAlive() {
+  alive = true;
+  let deathPopup = document.querySelector(".death-container");
+  deathPopup.style.display = "none"; 
+}
+
+function startGame() {
+  map.addEventListener('click', clickFunc);
+  createBaseSetup();
+  addHearts();
+  setAlive();
+  setTimeout(doTick, 27);
+}
+
+function addHearts(count=5) {
+  // <img class="heart" src="/static/images/png/heart.png" />
+
+  let heartsDiv = document.querySelector(".hearts");
+  
+  for (i=0; i < count; i++) {
+    let heart = document.createElement("img");
+    heart.src = "/static/images/png/heart.png";
+    heart.className = "heart";
+    heartsDiv.appendChild(heart);
+  }
+}
+
+function doTick(even=false) {
+
+  if (!alive) { // the only place where ticks stop happening
+    removeAllSprites();
+    displayDeathPopup();
+    return
+  }
+
+  if (!document.hasFocus() || isPaused) {
+    if (!isPaused) {
+      pause();
+    }
+    setTimeout(doTick, 27);
+    return
+  }
+
+  const player = document.getElementById("player");
+
+  movePlayer(even);
+  
+  let enemies = document.getElementsByClassName("enemy");
+  
+  for (let enemy of enemies) {
+    let moving = moveEnemy(enemy, even);
+  
+    if (checkIfCollidedWithClass(enemy, "arrow")) {
+      removeHealthOrKill(enemy, 1)
+    }
+
+    if (even) {
+      animate(enemy, moving);
+    }
+  }
+
+  if (checkIfCollidedWithClass(player, "enemy") && !player.classList.contains("hit")) {
+    removeHeartOrKill(player)
+  }
+
+  let newEven;
+  if (even) {
+    newEven = false
+  } else {
+    newEven = true
+  }
+  
+  setTimeout(() => doTick(newEven), 27);
+}
+
+function pause() {
+  map.removeEventListener('click', clickFunc);
+  isPaused = true;
+  keys = [];
+  
+  let pauseContainer = document.querySelector(".pause-container");
+  pauseContainer.style.display = "flex"
+}
+
 function unpause() {
   isPaused = false;
   let pauseContainer = document.querySelector(".pause-container");
   pauseContainer.style.display = "none";
+  map.addEventListener('click', clickFunc);
+}
+
+function getRoundDetails(cells, initialSeed, seedState) {
+
+  let jsonData = { // essentially just send back the same data 
+    "initial_seed": initialSeed,
+    "seed_state": seedState,
+    "cells": cells,
+    "round_number": 5
+  }
+
+  const request = new Request("/api/round_details", {
+    method: "POST",
+    body: `${jsonData}`
+  });
 }
 
 const TILE_SIZE = 36;
-let MAP_HEIGHT = -1;
+
+// need to be -1 initially, will be treated as a const later
+let MAP_HEIGHT = -1; 
 let MAP_WIDTH = -1
 
 var weaponInUse = false;
 var isPaused = false;
 
+var alive = true;
+
 let map = document.getElementById("map");
+let cells = null;
+let initialSeed = null;
+let seedState = null;
 
 const request = new Request("/api/map_generation", {method: "GET",}); // ?seed=29
 fetch(request)
@@ -497,6 +573,12 @@ fetch(request)
     }
   })
   .then((response) => {
+    console.log(response);
+
+    cells = response.cells;
+    initialSeed = response.initial_seed;
+    seedState = response.seed_state;
+
     response.cells.forEach(row => {
         let xrow = document.createElement("span");
         xrow.className = "tilerow";
@@ -512,7 +594,6 @@ fetch(request)
         })
 
         map.appendChild(xrow);
-
     });
 
     MAP_HEIGHT = response.cells.length * TILE_SIZE;
@@ -521,8 +602,7 @@ fetch(request)
     map.style.width = MAP_WIDTH + "px";
     map.style.height = MAP_HEIGHT + "px";
 
-    createBaseSetup();
-    doTick();
+    startGame();
   })
   .catch((error) => {
     console.error(error);
@@ -536,8 +616,9 @@ window.addEventListener("keydown",
 window.addEventListener('keyup',
   function(e){ keys[e.key] = false; }, false);
 
-map.addEventListener('click',
-  (e) => { if (!isPaused) { useSpear(e) } }, false);
+function clickFunc(e) {
+  if (!isPaused) { useSpear(e) }
+}
 
 function overwriteRightClick(event) {
   if (isPaused) {
@@ -554,3 +635,6 @@ function overwriteRightClick(event) {
 
 let continueButton = document.getElementById("continue");
 continueButton.onclick = unpause;
+
+let restartButton = document.getElementById("restart");
+restartButton.onclick = startGame;
