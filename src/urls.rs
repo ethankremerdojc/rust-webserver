@@ -1,8 +1,5 @@
 use std::{
-    fs,
-    thread,
-    time::Duration,
-    path::Path
+    fs, path::Path, thread, time::Duration, vec
 };
 use crate::game;
 
@@ -138,13 +135,56 @@ fn api_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) {
     }
 }
 
+fn get_uri_query_data(uri: &str) -> Vec<(String, String)> {
+    let qmark_index = match uri.find('?') {
+        Some(value) => value,
+        None => return vec!()
+    };
+
+    let query_data: &str = &uri[qmark_index + 1..];
+
+    let query_strings_split = query_data.split("&");
+    let query_strings: Vec<&str> = query_strings_split.collect();
+
+    println!("{query_strings:?}");
+
+    let mut result: Vec<(String, String)> = vec![];
+
+    for query_string in query_strings {
+        let q_split = query_string.split("=");
+        let q_collected: Vec<&str> = q_split.collect();
+
+        result.push((q_collected[0].to_string(), q_collected[1].to_string())); 
+    }
+
+    result
+}
+
 fn map_generation(uri: &str) -> (String, String, Vec<u8>) {
     let status_line: String = "HTTP/1.1 200 OK".to_string();
+    let query_data: Vec<(String, String)> = get_uri_query_data(uri);
+    
+    // println!("Uri: {uri}");
+    // println!("{query_data:?}");
 
-    // uri should contain the following:
-    // 1. seed
-    // 2. seedState
-    // 3. round#
+    let mut seed: u32 = 0;
+    let mut seed_state: u32 = 0;
+    let mut round: usize = 0;
+
+    for qd in query_data {
+        if qd.0 == "seed" {
+            seed = qd.1.parse::<u32>().unwrap();
+        }
+        if qd.0 == "seedState" {
+            seed_state = qd.1.parse::<u32>().unwrap();
+        }
+        if qd.0 == "round" {
+            round = qd.1.parse::<usize>().unwrap();
+        }
+    }
+
+    println!("Seed: {seed}, Seed State: {seed_state}, Round: {round}");
+    // Seed: 294, Seed State: 1992, Round: 4 
 
     // we will create a game with our initial seed (to initialize all the cells)
     // to be the same as what the user is seeing
@@ -153,8 +193,7 @@ fn map_generation(uri: &str) -> (String, String, Vec<u8>) {
     // based on what round they are on) Then generate some new enemies for them
     // based on the round number and seedstate.
 
-    let base_case = game::base_case();
-    let map_json = base_case.json();
-    
+    let map = game::run(seed, seed_state, round);
+    let map_json: String = map.json();
     (status_line, "application/json".to_string(), map_json.as_bytes().to_vec())
 }

@@ -44,7 +44,7 @@ impl Map {
 
     fn mutate_seed(&mut self) { self.seed_state = ((self.seed_state + ADD_NUM) * MULT_NUM) % MAX_SEED_SIZE; }
 
-    fn generate(&mut self) {
+    fn generate_tiles(&mut self) {
         self.gen_rocks();
         self.gen_trees();
         self.gen_water_sources();
@@ -310,8 +310,26 @@ impl Map {
     }
 }
 
-pub fn base_case() -> Map {
+pub fn run(seed: u32) -> Map {
     let mut map = Map::new();
-    map.generate();
+    map.seed_state = seed;
+    map.generate_tiles();
+
+    // map.generate_enemies(1);
+
+    // do map.generate, then set seed_state to seed_state to apply enemies.
     map
+}
+
+pub fn get_enemies_by_round(seed: u32, seed_state: u32, round: usize) {
+    let mut map = Map::new();
+    map.seed_state = seed;
+    map.generate_tiles();
+
+    map.seed_state = seed_state;
+    // map.generate_enemies(round);
+
+    // generate_enemies
+
+
 }
