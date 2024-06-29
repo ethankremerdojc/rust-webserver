@@ -193,7 +193,7 @@ fn map_generation(uri: &str) -> (String, String, Vec<u8>) {
     // based on what round they are on) Then generate some new enemies for them
     // based on the round number and seedstate.
 
-    let map = game::run(seed, seed_state, round);
+    let map = game::run(seed);
     let map_json: String = map.json();
     (status_line, "application/json".to_string(), map_json.as_bytes().to_vec())
 }

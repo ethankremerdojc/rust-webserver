@@ -1,12 +1,87 @@
 const MAP_WIDTH: usize = 24;
 const MAP_HEIGHT: usize = 24;
 
-const SEED: u32 = 914; // 38
+const SEED: u32 = 100; // 38
 const MAX_SEED_SIZE: u32 = 33391; //33391; // all 3 of below are primes
 const MULT_NUM: u32 = 3803; //3803;
 const ADD_NUM: u32 = 7499; //7499;
 
-#[derive(Default, Debug, Clone, Copy)]
+
+// ENEMY CONSTS
+const MAX_HEALTH_MULTIPLE: usize = 3;
+const MAX_SPEED_MULTIPLE: f64 = 1.5;
+const MAX_ENEMY_COUNT_MULTIPLE: usize = 4; // Starting round can have up to 3
+
+const ENEMY_TYPES: [&str; 1] = ["blue_slime"];
+
+#[derive(Debug)]
+struct Enemy {
+    health: usize,
+    enemy_type: String,
+    speed: f64,
+    x: usize,
+    y: usize
+}
+
+impl Enemy {
+
+    fn json(&self) -> String {
+        let health = self.health;
+        let speed = self.speed;
+        let x = self.x;
+        let y = self.y;
+        let t = &self.enemy_type;
+
+        let json_contents = format!(
+            "\"health\": {health}, \"speed\": {speed}, \"type\": \"{t}\", \"x\": {x}, \"y\": {y}");
+
+        let mut results: String = "{".to_string();
+        results += json_contents.as_str();
+        results += "}";
+
+        results
+    }
+
+    fn set_rand_value(&mut self, val: &str, seed_state: u32, round: usize) {
+        match val {
+            "health" => {
+                let max_health = round * MAX_HEALTH_MULTIPLE;
+                let mut health = (seed_state as usize) % max_health;
+
+                if health == 0 {
+                    health = 1
+                }
+
+                self.health = health
+            },
+            "speed" => {
+                let max_speed = (round as f64) * MAX_SPEED_MULTIPLE;
+                let mut speed = (seed_state as f64) % max_speed;
+
+                if speed == 0.0 {
+                    speed = 0.5
+                }
+                
+                self.speed = speed
+            },
+            _ => {
+                unimplemented!()
+            }
+        }
+    }
+
+    fn new() -> Enemy {
+        Enemy {
+            health: 0,
+            enemy_type: "blue_slime".to_string(),
+            speed: 1.0,
+            x: 0,
+            y: 0
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone, Copy, PartialEq)]
 enum CellState {
     #[default]
     Blank,
@@ -248,6 +323,49 @@ impl Map {
         (xpos, ypos)
     }
 
+    fn rand_empty_position(&mut self) -> (usize, usize) {
+        let mut rand_position;
+
+        loop {
+            rand_position = self.rand_position();
+            let cell_content: CellState = self.cells[rand_position.0][rand_position.1];
+            if cell_content == CellState::Blank { break }
+        }
+
+        rand_position
+    }
+
+    fn generate_enemies(&mut self, round: usize) -> Vec<Enemy> {
+        // pick random EMPTY tile
+        // create random enemy object based on round 
+        // Different types of enemies become available on different round numbers, like ranged, tanks, bosses etc.
+        // Potentially on rounds % 5 we can summon boss type
+
+        let max_enemies: usize = round * MAX_ENEMY_COUNT_MULTIPLE;
+        let mut enemy_count: usize = (self.seed_state as usize) % max_enemies;
+
+        if enemy_count == 0 { enemy_count = 1 } // min 1
+
+        let mut enemies: Vec<Enemy> = vec![];
+
+        for _ in 0..enemy_count {
+            self.mutate_seed();
+            let mut enemy = Enemy::new();
+
+            let rand_empty_position = self.rand_empty_position();
+
+            enemy.x = rand_empty_position.0;
+            enemy.y = rand_empty_position.1;
+
+            enemy.set_rand_value("health", self.seed_state, round);
+            self.mutate_seed();
+            enemy.set_rand_value("speed", self.seed_state, round);
+            enemies.push(enemy)
+        }
+
+        enemies
+    }
+
     fn render(&self) {
         for row in self.cells { // .iter().rev()
             let mut row_contents: String = String::new();
@@ -306,7 +424,7 @@ impl Map {
         let mut results: String = "{".to_string();
         results += json_contents.as_str();
         results += "}";
-        results
+        results.to_string()
     }
 }
 
@@ -314,6 +432,9 @@ pub fn run(seed: u32) -> Map {
     let mut map = Map::new();
     map.seed_state = seed;
     map.generate_tiles();
+
+    get_enemies_by_round(SEED, map.seed_state, 1);
+
     map
 }
 
@@ -323,7 +444,10 @@ pub fn get_enemies_by_round(seed: u32, seed_state: u32, round: usize) {
     map.generate_tiles();
 
     map.seed_state = seed_state;
-    // map.generate_enemies(round);
-    // generate_enemies
-    // Enemy Struct (as json?)
+    let enemies = map.generate_enemies(round);
+
+    for enemy in enemies {
+        let json = enemy.json();
+        println!("{json:?}");
+    }
 }
