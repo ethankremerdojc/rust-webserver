@@ -324,6 +324,6 @@ pub fn get_enemies_by_round(seed: u32, seed_state: u32, round: usize) {
 
     map.seed_state = seed_state;
     // map.generate_enemies(round);
-
     // generate_enemies
+    // Enemy Struct (as json?)
 }
