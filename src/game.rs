@@ -314,10 +314,6 @@ pub fn run(seed: u32) -> Map {
     let mut map = Map::new();
     map.seed_state = seed;
     map.generate_tiles();
-
-    // map.generate_enemies(1);
-
-    // do map.generate, then set seed_state to seed_state to apply enemies.
     map
 }
 
@@ -330,6 +326,4 @@ pub fn get_enemies_by_round(seed: u32, seed_state: u32, round: usize) {
     // map.generate_enemies(round);
 
     // generate_enemies
-
-
 }
