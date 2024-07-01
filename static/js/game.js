@@ -468,6 +468,7 @@ function incrementRound() {
     .then((response) => {
       SEED_STATE = response.seed_state;
       ROUND_NUMBER ++;
+      roundNumberDiv.innerHTML = ROUND_NUMBER;
       for (var enemy of response.enemies) {
         //todo add enemy speed to create enemy
         
@@ -485,7 +486,9 @@ function incrementRound() {
   });
 }
 
+const roundNumberDiv = document.getElementById("roundNumber");
 let ROUND_NUMBER = 1;
+roundNumberDiv.innerHTML = ROUND_NUMBER;
 
 function startGame() {
 
@@ -507,7 +510,6 @@ function startGame() {
     .then((response) => {
       console.log(response);
       SEED_STATE = response.seed_state;
-      ROUND_NUMBER ++;
 
       initializeImages();
 
