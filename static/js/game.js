@@ -75,7 +75,7 @@ function initializeEnemyImages(imageCacheDiv) {
   }
 }
 
-function createEnemy(x, y, map, additionalClass, hitpoints=1) {
+function createEnemy(x, y, map, additionalClass, hitpoints=1, speed=1.0) {
   //todo add enemy speed attribute
   let enemyDiv = document.createElement("span");
   enemyDiv.className = "enemy";
@@ -84,6 +84,7 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1) {
   enemyDiv.style.left = x + "px";
 
   enemyDiv.setAttribute("health", hitpoints);
+  enemyDiv.setAttribute("speed", speed);
 
   let imageCount = 6;
   let frameNumber = 1;
@@ -302,10 +303,12 @@ function moveEnemy(enemy, even){ // returns bool moving
   let delta_y = 0;
   let delta_x = 0;
 
-  if (player_y > enemy_y) { delta_y = 1; }
-  if (player_y < enemy_y) { delta_y = -1; }
-  if (player_x > enemy_x) { delta_x = 1; }
-  if (player_x < enemy_x) { delta_x = -1; }
+  let speed = Number(enemy.getAttribute("speed"));
+
+  if (player_y > enemy_y) { delta_y = speed; }
+  if (player_y < enemy_y) { delta_y = -speed; }
+  if (player_x > enemy_x) { delta_x = speed; }
+  if (player_x < enemy_x) { delta_x = -speed; }
 
   let bottomPx = (enemy_y + delta_y) + "px";
   let leftPx = (enemy_x + delta_x) + "px";
@@ -466,6 +469,7 @@ function incrementRound() {
       }
     })
     .then((response) => {
+      console.log(response)
       SEED_STATE = response.seed_state;
       ROUND_NUMBER ++;
       roundNumberDiv.innerHTML = ROUND_NUMBER;
@@ -477,7 +481,8 @@ function incrementRound() {
           enemy.y * TILE_SIZE, 
           map, 
           "blue_slime", 
-          enemy.health
+          enemy.health,
+          enemy.speed
         );
       }
     })
@@ -522,7 +527,8 @@ function startGame() {
           enemy.y * TILE_SIZE, 
           map, 
           "blue_slime", 
-          enemy.health
+          enemy.health,
+          enemy.speed
         );
       }
 
@@ -631,7 +637,7 @@ var alive = true;
 
 let map = document.getElementById("map");
 let cells = null;
-let INITIAL_SEED = 101;
+let INITIAL_SEED = 8;
 let SEED_STATE = null;
 
 let mapgen_uri = `/api/map_generation?seed=${INITIAL_SEED}`;
