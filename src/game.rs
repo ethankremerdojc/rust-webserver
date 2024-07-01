@@ -15,7 +15,7 @@ const MAX_ENEMY_COUNT_MULTIPLE: usize = 4; // Starting round can have up to 3
 const ENEMY_TYPES: [&str; 1] = ["blue_slime"];
 
 #[derive(Debug)]
-struct Enemy {
+pub struct Enemy {
     health: usize,
     enemy_type: String,
     speed: f64,
@@ -433,21 +433,38 @@ pub fn run(seed: u32) -> Map {
     map.seed_state = seed;
     map.generate_tiles();
 
-    get_enemies_by_round(SEED, map.seed_state, 1);
-
     map
 }
 
-pub fn get_enemies_by_round(seed: u32, seed_state: u32, round: usize) {
+pub fn get_round_data_json(enemies: Vec<Enemy>, seed: u32, seed_state: u32) -> String {
+    let mut result: String = String::new();
+
+    result += "{";
+    result += "\"enemies\": [";
+
+    for enemy in enemies {
+        let ejsonstr = enemy.json();
+        let ejson: &str = ejsonstr.as_str();
+        result += ejson;
+        result += ", ";
+    }
+
+    result.pop();
+    result.pop();
+    // remove the last two chars, (, )
+
+    result += "], ";
+    result += format!("\"seed\": {seed}, \"seed_state\": {seed_state}").as_str();
+    result += "}";
+    result
+}
+
+pub fn get_enemies_by_round(seed: u32, seed_state: u32, round: usize) -> (Vec<Enemy>, u32) {
     let mut map = Map::new();
     map.seed_state = seed;
     map.generate_tiles();
 
     map.seed_state = seed_state;
     let enemies = map.generate_enemies(round);
-
-    for enemy in enemies {
-        let json = enemy.json();
-        println!("{json:?}");
-    }
+    (enemies, map.seed_state)
 }

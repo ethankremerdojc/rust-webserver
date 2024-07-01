@@ -126,9 +126,8 @@ fn api_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) {
 
     if uri.starts_with("/api/map_generation") {
         map_generation(uri)
-    } else if uri == "/api/round_details" {
-        // round_details()
-        todo!()
+    } else if uri.starts_with("/api/get_round_data") {
+        get_round_data(uri)
     } else {
         // broken
         todo!()
@@ -168,6 +167,61 @@ fn map_generation(uri: &str) -> (String, String, Vec<u8>) {
     // println!("{query_data:?}");
 
     let mut seed: u32 = 0;
+    // let mut seed_state: u32 = 0;
+    // let mut round: usize = 0;
+
+    for qd in query_data {
+        if qd.0 == "seed" {
+            seed = qd.1.parse::<u32>().unwrap();
+        }
+        // if qd.0 == "seed_state" {
+        //     seed_state = qd.1.parse::<u32>().unwrap();
+        // }
+        // if qd.0 == "round" {
+        //     round = qd.1.parse::<usize>().unwrap();
+        // }
+    }
+
+    println!("Seed: {seed}"); // , Seed State: {seed_state}, Round: {round}
+    let map = game::run(seed);
+    let map_json: String = map.json();
+    (status_line, "application/json".to_string(), map_json.as_bytes().to_vec())
+}
+
+// fn enemies_by_round(uri: &str) -> (String, String, Vec<u8>) {
+//     let status_line: String = "HTTP/1.1 200 OK".to_string();
+//     let query_data: Vec<(String, String)> = get_uri_query_data(uri);
+
+//     let mut seed: u32 = 0;
+//     let mut seed_state: u32 = 0;
+//     let mut round: usize = 0;
+
+//     for qd in query_data {
+//         if qd.0 == "seed" {
+//             seed = qd.1.parse::<u32>().unwrap();
+//         }
+//         if qd.0 == "seed_state" {
+//             seed_state = qd.1.parse::<u32>().unwrap();
+//         }
+//         if qd.0 == "round" {
+//             round = qd.1.parse::<usize>().unwrap();
+//         }
+//     }
+
+//     println!("Seed: {seed}, Seed State: {seed_state}, Round: {round}");
+
+//     let enemies_by_round = game::get_enemies_by_round(seed, seed_state, round);
+//     let enemies_json = game::get_enemies_json(enemies_by_round);
+
+//     (status_line, "application/json".to_string(), enemies_json.as_bytes().to_vec())
+    
+// }
+
+fn get_round_data(uri: &str) -> (String, String, Vec<u8>) {
+    let status_line: String = "HTTP/1.1 200 OK".to_string();
+    let query_data: Vec<(String, String)> = get_uri_query_data(uri);
+
+    let mut seed: u32 = 0;
     let mut seed_state: u32 = 0;
     let mut round: usize = 0;
 
@@ -175,7 +229,7 @@ fn map_generation(uri: &str) -> (String, String, Vec<u8>) {
         if qd.0 == "seed" {
             seed = qd.1.parse::<u32>().unwrap();
         }
-        if qd.0 == "seedState" {
+        if qd.0 == "seed_state" {
             seed_state = qd.1.parse::<u32>().unwrap();
         }
         if qd.0 == "round" {
@@ -184,16 +238,10 @@ fn map_generation(uri: &str) -> (String, String, Vec<u8>) {
     }
 
     println!("Seed: {seed}, Seed State: {seed_state}, Round: {round}");
-    // Seed: 294, Seed State: 1992, Round: 4 
 
-    // we will create a game with our initial seed (to initialize all the cells)
-    // to be the same as what the user is seeing
+    let (enemies_by_round, seed_state) = game::get_enemies_by_round(seed, seed_state, round);
+    let round_data_json = game::get_round_data_json(enemies_by_round, seed, seed_state);
 
-    // then we set the seedstate to whatever the user has (will be different
-    // based on what round they are on) Then generate some new enemies for them
-    // based on the round number and seedstate.
-
-    let map = game::run(seed);
-    let map_json: String = map.json();
-    (status_line, "application/json".to_string(), map_json.as_bytes().to_vec())
+    (status_line, "application/json".to_string(), round_data_json.as_bytes().to_vec())
+ 
 }

@@ -1,16 +1,3 @@
-function createBaseSetup() {
-  createPlayer(332, 368, map);
-
-  initializeImages();
-
-  createEnemy(400, 120, map, "blue", 3);
-  createEnemy(120, 170, map, "blue", 2);
-  createEnemy(220, 420, map, "blue", 4);
-  createEnemy(520, 520, map, "blue", 6);
-  createEnemy(420, 370, map, "blue", 7);
-  createEnemy(320, 120, map, "blue", 11);
-}
-
 function getTileParameters(cell) {
   let params = {
     "blank": {
@@ -89,6 +76,7 @@ function initializeEnemyImages(imageCacheDiv) {
 }
 
 function createEnemy(x, y, map, additionalClass, hitpoints=1) {
+  //todo add enemy speed attribute
   let enemyDiv = document.createElement("span");
   enemyDiv.className = "enemy";
   enemyDiv.classList.add(additionalClass);
@@ -357,8 +345,21 @@ function removeHealthOrKill(enemy, damage=1) {
 
   let enemy_health = Number(enemy.getAttribute("health"));
   enemy_health -= damage;
-  if (enemy_health <= 0) { map.removeChild(enemy); }
+  if (enemy_health <= 0) { 
+    map.removeChild(enemy); 
+    // check if there are no enemies left
+
+    let totalEnemies = document.querySelectorAll(".enemy");
+    if (totalEnemies.length == 0) {
+      setTimeout(() => {
+        incrementRound();
+      }, 1000)
+
+      return
+    }
+  }
   enemy.setAttribute("health", enemy_health);
+
 
   setTimeout(() => {enemy.classList.remove("hit")}, 400)
 }
@@ -447,12 +448,95 @@ function setAlive() {
   deathPopup.style.display = "none"; 
 }
 
+function incrementRound() {
+
+  let uri = `/api/get_round_data?seed=${INITIAL_SEED}&seed_state=${SEED_STATE}&round=${ROUND_NUMBER}`;
+  console.log(uri);
+
+  let get_round_data_request = new Request( //todo check ramifications of seed_state being set to initial seed.
+    uri, 
+    {method: "GET"});
+  
+  fetch(get_round_data_request)
+    .then((response) => {
+      if (response.status === 200) {
+        return response.json();
+      } else {
+        throw new Error("Something went wrong on API server!");
+      }
+    })
+    .then((response) => {
+      SEED_STATE = response.seed_state;
+      ROUND_NUMBER ++;
+      for (var enemy of response.enemies) {
+        //todo add enemy speed to create enemy
+        
+        createEnemy(
+          enemy.x * TILE_SIZE, 
+          enemy.y * TILE_SIZE, 
+          map, 
+          "blue_slime", 
+          enemy.health
+        );
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+  });
+}
+
+let ROUND_NUMBER = 1;
+
 function startGame() {
-  map.addEventListener('click', clickFunc);
-  createBaseSetup();
-  addHearts();
-  setAlive();
-  setTimeout(doTick, 27);
+
+  ROUND_NUMBER = 1
+
+  //todo this request should also return the new seed and seed state 
+  let uri = `/api/get_round_data?seed=${INITIAL_SEED}&seed_state=${INITIAL_SEED}&round=${ROUND_NUMBER}`;
+  console.log(uri);
+
+  const request = new Request(uri, {method: "GET",});
+  fetch(request)
+    .then((response) => {
+      if (response.status === 200) {
+        return response.json();
+      } else {
+        throw new Error("Something went wrong on API server!");
+      }
+    })
+    .then((response) => {
+      console.log(response);
+      SEED_STATE = response.seed_state;
+      ROUND_NUMBER ++;
+
+      initializeImages();
+
+      map.addEventListener('click', clickFunc);
+
+      for (var enemy of response.enemies) {
+        //todo add enemy speed to create enemy
+        createEnemy(
+          enemy.x * TILE_SIZE, 
+          enemy.y * TILE_SIZE, 
+          map, 
+          "blue_slime", 
+          enemy.health
+        );
+      }
+
+      createPlayer(
+        12 * TILE_SIZE,
+        12 * TILE_SIZE,
+        map
+      )
+
+      addHearts();
+      setAlive();
+      setTimeout(doTick, 27);
+    })
+    .catch((error) => {
+      console.error(error);
+  });
 }
 
 function addHearts(count=5) {
@@ -532,21 +616,6 @@ function unpause() {
   map.addEventListener('click', clickFunc);
 }
 
-function getRoundDetails(cells, initialSeed, seedState) {
-
-  let jsonData = { // essentially just send back the same data 
-    "initial_seed": initialSeed,
-    "seed_state": seedState,
-    "cells": cells,
-    "round_number": 5
-  }
-
-  const request = new Request("/api/round_details", {
-    method: "POST",
-    body: `${jsonData}`
-  });
-}
-
 const TILE_SIZE = 36;
 
 // need to be -1 initially, will be treated as a const later
@@ -560,10 +629,13 @@ var alive = true;
 
 let map = document.getElementById("map");
 let cells = null;
-let initialSeed = null;
-let seedState = null;
+let INITIAL_SEED = 101;
+let SEED_STATE = null;
 
-const request = new Request("/api/map_generation?seed=99999&seedState=1992&round=4", {method: "GET",}); // ?seed=29
+let mapgen_uri = `/api/map_generation?seed=${INITIAL_SEED}`;
+console.log(mapgen_uri);
+
+const request = new Request(mapgen_uri, {method: "GET",});
 fetch(request)
   .then((response) => {
     if (response.status === 200) {
@@ -576,8 +648,7 @@ fetch(request)
     console.log(response);
 
     cells = response.cells;
-    initialSeed = response.initial_seed;
-    seedState = response.seed_state;
+    SEED_STATE = response.seed_state;
 
     response.cells.forEach(row => {
         let xrow = document.createElement("span");
