@@ -30,14 +30,14 @@ function initializeGame() {
               xrow.appendChild(ycol);
           })
   
-          map.appendChild(xrow);
+          MAP.appendChild(xrow);
       });
   
       MAP_HEIGHT = response.cells.length * TILE_SIZE;
       MAP_WIDTH = response.cells[0].length * TILE_SIZE;
   
-      map.style.width = MAP_WIDTH + "px";
-      map.style.height = MAP_HEIGHT + "px";
+      MAP.style.width = MAP_WIDTH + "px";
+      MAP.style.height = MAP_HEIGHT + "px";
   
       startGame();
     })
@@ -75,7 +75,7 @@ function createPlayer(x, y, map) {
   playerDiv.style.bottom = y + "px";
   playerDiv.style.left = x + "px";
 
-  map.appendChild(playerDiv);
+  MAP.appendChild(playerDiv);
 
   let weaponBox = document.createElement("div");
   player.appendChild(weaponBox);
@@ -99,6 +99,12 @@ function initializeImages() {
   let arrowImage = document.createElement("img");
   arrowImage.src = "/static/images/png/arrow.png";
   imageCacheDiv.appendChild(arrowImage);
+  let bowImage = document.createElement("img");
+  bowImage.src = "/static/images/png/bow.png";
+  imageCacheDiv.appendChild(bowImage);
+  let spearImage = document.createElement("img");
+  spearImage.src = "/static/images/png/spear.png";
+  imageCacheDiv.appendChild(spearImage);
 }
 
 function initializeEnemyImages(imageCacheDiv) {
@@ -154,7 +160,7 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1, speed=1.0) {
   image.src = imagePath;
   enemyDiv.appendChild(image);
 
-  map.appendChild(enemyDiv);
+  MAP.appendChild(enemyDiv);
 }
 
 //* WEAPONS FUNCTIONALITY
@@ -234,12 +240,12 @@ function moveArrow(arrow, dx, dy, speed) {
 
   // if not touching water or land, this arrow should get deleted.
   if (!(checkIfCollidedWithClass(arrow, "water") || checkIfCollidedWithClass(arrow, "dirt"))) {
-    setTimeout(() => map.removeChild(arrow), 20);
+    setTimeout(() => MAP.removeChild(arrow), 20);
     return
   }
 
   if (checkIfCollidedWithClass(arrow, "enemy") || checkIfCollidedWithClass(arrow, "tree") || checkIfCollidedWithClass(arrow, "rock")) {
-    setTimeout(() => map.removeChild(arrow), 27);
+    setTimeout(() => MAP.removeChild(arrow), 27);
     return
   } else {
     setTimeout(() => moveArrow(arrow, dx, dy, speed), 12);
@@ -264,7 +270,7 @@ function summonArrow(startX, startY, mouseX, mouseY, angle) {
   arrow.style.left = startX + "px";
   arrow.style.bottom = startY + "px";
   arrow.className = "arrow";
-  map.appendChild(arrow);
+  MAP.appendChild(arrow);
 
   moveArrow(arrow, dx, dy, speed);
 }
@@ -391,7 +397,7 @@ function removeHealthOrKill(enemy, damage=1) {
   let enemy_health = Number(enemy.getAttribute("health"));
   enemy_health -= damage;
   if (enemy_health <= 0) { 
-    map.removeChild(enemy); 
+    MAP.removeChild(enemy); 
     // check if there are no enemies left
 
     let totalEnemies = document.querySelectorAll(".enemy");
@@ -478,21 +484,21 @@ function removeHeartOrKill(player) {
 function removeAllSprites() {
   // remove all enemies, projectiles (arrows), and player.
 
-  let enemies = map.querySelectorAll(".enemy");
-  let player = map.querySelector("#player");
-  let arrows = map.querySelectorAll(".arrow");
+  let enemies = MAP.querySelectorAll(".enemy");
+  let player = MAP.querySelector("#player");
+  let arrows = MAP.querySelectorAll(".arrow");
 
   for (let enemy of enemies) {
-    map.removeChild(enemy);
+    MAP.removeChild(enemy);
   }
-  map.removeChild(player);
+  MAP.removeChild(player);
   for (let arrow of arrows) {
-    map.removeChild(arrow);
+    MAP.removeChild(arrow);
   }
 }
 
 function displayDeathPopup() {
-  map.removeEventListener('click', clickFunc);
+  MAP.removeEventListener('click', clickFunc);
   let deathPopup = document.querySelector(".death-container");
   deathPopup.style.display = "flex";
 }
@@ -567,7 +573,7 @@ function startGame() {
 
       initializeImages();
 
-      map.addEventListener('click', clickFunc);
+      MAP.addEventListener('click', clickFunc);
 
       for (let enemy of response.enemies) {
         //todo add enemy speed to create enemy
@@ -611,7 +617,8 @@ function addHearts(count=5) {
 
 function doTick(even=false) {
 
-  if ( ALIVE) { // the only place where ticks stop happening
+  if (!ALIVE) { // the only place where ticks stop happening
+    SEED_STATE = INITIAL_SEED;
     removeAllSprites();
     displayDeathPopup();
     return
@@ -658,7 +665,7 @@ function doTick(even=false) {
 }
 
 function pause() {
-  map.removeEventListener('click', clickFunc);
+  MAP.removeEventListener('click', clickFunc);
   IS_PAUSED = true;
   keys = [];
   
@@ -670,7 +677,7 @@ function unpause() {
   IS_PAUSED = false;
   let pauseContainer = document.querySelector(".pause-container");
   pauseContainer.style.display = "none";
-  map.addEventListener('click', clickFunc);
+  MAP.addEventListener('click', clickFunc);
 }
 
 //* INPUT HANDLING
@@ -715,12 +722,15 @@ const TILE_SIZE = 36; // in pixels
 let WEAPON_IN_USE = false;
 let IS_PAUSED = false;
 let ALIVE = true;
-let INITIAL_SEED = 8;
+
+let INITIAL_SEED = 841;
+
 let SEED_STATE = null;
 
 //* HTML ELEMENTS
 
-const map = document.getElementById("map");
+const MAP = document.getElementById("map");
+
 const continueButton = document.getElementById("continue");
 const restartButton = document.getElementById("restart");
 continueButton.onclick = unpause;
