@@ -1,3 +1,51 @@
+//* INITIALIZING / CREATING
+
+function initializeGame() {
+  const request = new Request(mapgen_uri, {method: "GET",});
+  fetch(request)
+    .then((response) => {
+      if (response.status === 200) {
+        return response.json();
+      } else {
+        throw new Error("Something went wrong on API server!");
+      }
+    })
+    .then((response) => {
+      console.log(response);
+  
+      cells = response.cells;
+      SEED_STATE = response.seed_state;
+  
+      response.cells.forEach(row => {
+          let xrow = document.createElement("span");
+          xrow.className = "tilerow";
+  
+          row.forEach(cell => {
+              let ycol = document.createElement("span");
+              ycol.className = "tile";
+  
+              let cellParams = getTileParameters(cell);
+              ycol.classList.add(cellParams["class"]);
+              ycol.style.background = cellParams["background"];
+              xrow.appendChild(ycol);
+          })
+  
+          map.appendChild(xrow);
+      });
+  
+      MAP_HEIGHT = response.cells.length * TILE_SIZE;
+      MAP_WIDTH = response.cells[0].length * TILE_SIZE;
+  
+      map.style.width = MAP_WIDTH + "px";
+      map.style.height = MAP_HEIGHT + "px";
+  
+      startGame();
+    })
+    .catch((error) => {
+      console.error(error);
+  });
+}
+
 function getTileParameters(cell) {
   let params = {
     "blank": {
@@ -58,14 +106,14 @@ function initializeEnemyImages(imageCacheDiv) {
   let dirPath = "/static/images/png/";
   let animationCount = 6;
 
-  for (var sprite of sprites) {
+  for (let sprite of sprites) {
     let spritePath = dirPath + sprite + "/";
 
-    for (var imgType of ["idle", "moving"]) {
+    for (let imgType of ["idle", "moving"]) {
       // "/static/images/png/blue_slime/idle/"
       let typePath = spritePath + imgType + "/";
 
-      for (var i = 1; i < animationCount + 1; i++) {
+      for (let i = 1; i < animationCount + 1; i++) {
         let imgPath = typePath + i + ".png";
         let img = document.createElement("img");
         img.src = imgPath;
@@ -109,6 +157,8 @@ function createEnemy(x, y, map, additionalClass, hitpoints=1, speed=1.0) {
   map.appendChild(enemyDiv);
 }
 
+//* WEAPONS FUNCTIONALITY
+
 function getCenter(element) {
   const {left, top, width, height} = element.getBoundingClientRect();
   return {x: left + width / 2, y: top + height / 2}
@@ -146,7 +196,7 @@ function useBow(e) {
 function handleBowUse(e, player, weapon, angle) {
   let playerX = Number(player.style.left.replace("px", ""));
   let playerY = Number(player.style.bottom.replace("px", ""));
-  var offset = document.querySelector('#map').getBoundingClientRect();
+  let offset = document.querySelector('#map').getBoundingClientRect();
   let x = e.clientX - offset.left;
   let y = offset.bottom - e.clientY;
 
@@ -219,15 +269,7 @@ function summonArrow(startX, startY, mouseX, mouseY, angle) {
   moveArrow(arrow, dx, dy, speed);
 }
 
-function collides(obj1, obj2) {
-  let rect1 = obj1.getBoundingClientRect();
-  let rect2 = obj2.getBoundingClientRect();
-
-  return !(rect1.right < rect2.left || 
-    rect1.left > rect2.right || 
-    rect1.bottom < rect2.top || 
-    rect1.top > rect2.bottom)
-}
+//* MOVEMENT
 
 function movePlayer(even){
   let player_size = 20;
@@ -367,6 +409,16 @@ function removeHealthOrKill(enemy, damage=1) {
   setTimeout(() => {enemy.classList.remove("hit")}, 400)
 }
 
+function collides(obj1, obj2) {
+  let rect1 = obj1.getBoundingClientRect();
+  let rect2 = obj2.getBoundingClientRect();
+
+  return !(rect1.right < rect2.left || 
+    rect1.left > rect2.right || 
+    rect1.bottom < rect2.top || 
+    rect1.top > rect2.bottom)
+}
+
 function checkIfCollidedWithClass(element, c) {
   let objs = document.getElementsByClassName(c);
 
@@ -379,7 +431,7 @@ function checkIfCollidedWithClass(element, c) {
 }
 
 function animate(obj, moving) {
-  // update both idle and moving images for simplicity, then display the one that is relevant based on moving var
+  // update both idle and moving images for simplicity, then display the one that is relevant based on moving let
 
   let frameNumber = Number(obj.getAttribute("framenumber"));
   let frameCount = Number(obj.getAttribute("framecount"));
@@ -430,11 +482,11 @@ function removeAllSprites() {
   let player = map.querySelector("#player");
   let arrows = map.querySelectorAll(".arrow");
 
-  for (var enemy of enemies) {
+  for (let enemy of enemies) {
     map.removeChild(enemy);
   }
   map.removeChild(player);
-  for (var arrow of arrows) {
+  for (let arrow of arrows) {
     map.removeChild(arrow);
   }
 }
@@ -473,7 +525,7 @@ function incrementRound() {
       SEED_STATE = response.seed_state;
       ROUND_NUMBER ++;
       roundNumberDiv.innerHTML = ROUND_NUMBER;
-      for (var enemy of response.enemies) {
+      for (let enemy of response.enemies) {
         //todo add enemy speed to create enemy
         
         createEnemy(
@@ -491,9 +543,6 @@ function incrementRound() {
   });
 }
 
-const roundNumberDiv = document.getElementById("roundNumber");
-let ROUND_NUMBER = 1;
-roundNumberDiv.innerHTML = ROUND_NUMBER;
 
 function startGame() {
 
@@ -520,7 +569,7 @@ function startGame() {
 
       map.addEventListener('click', clickFunc);
 
-      for (var enemy of response.enemies) {
+      for (let enemy of response.enemies) {
         //todo add enemy speed to create enemy
         createEnemy(
           enemy.x * TILE_SIZE, 
@@ -624,70 +673,9 @@ function unpause() {
   map.addEventListener('click', clickFunc);
 }
 
-const TILE_SIZE = 36;
+//* INPUT HANDLING
 
-// need to be -1 initially, will be treated as a const later
-let MAP_HEIGHT = -1; 
-let MAP_WIDTH = -1
-
-var weaponInUse = false;
-var isPaused = false;
-
-var alive = true;
-
-let map = document.getElementById("map");
-let cells = null;
-let INITIAL_SEED = 8;
-let SEED_STATE = null;
-
-let mapgen_uri = `/api/map_generation?seed=${INITIAL_SEED}`;
-console.log(mapgen_uri);
-
-const request = new Request(mapgen_uri, {method: "GET",});
-fetch(request)
-  .then((response) => {
-    if (response.status === 200) {
-      return response.json();
-    } else {
-      throw new Error("Something went wrong on API server!");
-    }
-  })
-  .then((response) => {
-    console.log(response);
-
-    cells = response.cells;
-    SEED_STATE = response.seed_state;
-
-    response.cells.forEach(row => {
-        let xrow = document.createElement("span");
-        xrow.className = "tilerow";
-
-        row.forEach(cell => {
-            let ycol = document.createElement("span");
-            ycol.className = "tile";
-
-            let cellParams = getTileParameters(cell);
-            ycol.classList.add(cellParams["class"]);
-            ycol.style.background = cellParams["background"];
-            xrow.appendChild(ycol);
-        })
-
-        map.appendChild(xrow);
-    });
-
-    MAP_HEIGHT = response.cells.length * TILE_SIZE;
-    MAP_WIDTH = response.cells[0].length * TILE_SIZE;
-
-    map.style.width = MAP_WIDTH + "px";
-    map.style.height = MAP_HEIGHT + "px";
-
-    startGame();
-  })
-  .catch((error) => {
-    console.error(error);
-});
-
-var keys = [];
+let keys = [];
 
 window.addEventListener("keydown",
   function(e){ keys[e.key] = true; }, false);
@@ -712,8 +700,33 @@ function overwriteRightClick(event) {
   }
 }
 
-let continueButton = document.getElementById("continue");
-continueButton.onclick = unpause;
+//* LETS
 
-let restartButton = document.getElementById("restart");
+const roundNumberDiv = document.getElementById("roundNumber");
+let ROUND_NUMBER = 1;
+roundNumberDiv.innerHTML = ROUND_NUMBER;
+
+const TILE_SIZE = 36;
+
+// below need to be -1 initially, will be treated as a const once fetched
+let MAP_HEIGHT = -1; 
+let MAP_WIDTH = -1
+
+let weaponInUse = false;
+let isPaused = false;
+let alive = true;
+let cells = null;
+let INITIAL_SEED = 8;
+let SEED_STATE = null;
+
+let mapgen_uri = `/api/map_generation?seed=${INITIAL_SEED}`;
+
+//* HTML ELEMENTS
+
+const map = document.getElementById("map");
+const continueButton = document.getElementById("continue");
+const restartButton = document.getElementById("restart");
+continueButton.onclick = unpause;
 restartButton.onclick = startGame;
+
+initializeGame();

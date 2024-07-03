@@ -9,8 +9,8 @@ const ADD_NUM: u32 = 7499; //7499;
 
 // ENEMY CONSTS
 const MAX_HEALTH_MULTIPLE: usize = 3;
-const MAX_SPEED_MULTIPLE: f64 = 1.5;
-const MAX_ENEMY_COUNT_MULTIPLE: usize = 4; // Starting round can have up to 3
+const MAX_SPEED_MULTIPLE: f64 = 0.4;
+const MAX_ENEMY_COUNT_MULTIPLE: usize = 2; // Starting round can have up to 3
 
 const ENEMY_TYPES: [&str; 1] = ["blue_slime"];
 
