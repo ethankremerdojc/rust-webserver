@@ -1,6 +1,8 @@
 //* INITIALIZING / CREATING
 
 function initializeGame() {
+  let mapgen_uri = `/api/map_generation?seed=${INITIAL_SEED}`;
+
   const request = new Request(mapgen_uri, {method: "GET",});
   fetch(request)
     .then((response) => {
@@ -12,8 +14,6 @@ function initializeGame() {
     })
     .then((response) => {
       console.log(response);
-  
-      cells = response.cells;
       SEED_STATE = response.seed_state;
   
       response.cells.forEach(row => {
@@ -165,7 +165,7 @@ function getCenter(element) {
 }
 
 function useWeapon(e, cname) {
-  if (!weaponInUse) { weaponInUse = true; } else { return }
+  if (!WEAPON_IN_USE) { WEAPON_IN_USE = true; } else { return }
   let player = document.getElementById("player");
   let weaponBox = player.querySelector(".weapon-box");
   let weapon = weaponBox.querySelector("." + cname);
@@ -207,7 +207,7 @@ function handleBowUse(e, player, weapon, angle) {
     weapon.style.opacity = "0"; 
   }, 490)
 
-  setTimeout(() => { weapon.style.opacity = "1"; weaponInUse = false }, 700)
+  setTimeout(() => { weapon.style.opacity = "1"; WEAPON_IN_USE = false }, 700)
 }
 
 function handleSpearUse(weapon) {
@@ -219,7 +219,7 @@ function handleSpearUse(weapon) {
     weapon.style.opacity = "0"; 
   }, 490)
 
-  setTimeout(() => { weapon.style.opacity = "1"; weaponInUse = false }, 700)
+  setTimeout(() => { weapon.style.opacity = "1"; WEAPON_IN_USE = false }, 700)
 }
 
 function moveArrow(arrow, dx, dy, speed) {
@@ -469,7 +469,7 @@ function removeHeartOrKill(player) {
   let last = hearts[hearts.length - 1];
   last.parentNode.removeChild(last);
   if (hearts.length <= 1) {
-    alive = false;
+    ALIVE = false;
   } else {
     setTimeout(() => {player.classList.remove("hit")}, 500);
   }
@@ -498,7 +498,7 @@ function displayDeathPopup() {
 }
 
 function setAlive() {
-  alive = true;
+  ALIVE = true;
   let deathPopup = document.querySelector(".death-container");
   deathPopup.style.display = "none"; 
 }
@@ -524,7 +524,7 @@ function incrementRound() {
       console.log(response)
       SEED_STATE = response.seed_state;
       ROUND_NUMBER ++;
-      roundNumberDiv.innerHTML = ROUND_NUMBER;
+      ROUND_NUMBER_DIV.innerHTML = ROUND_NUMBER;
       for (let enemy of response.enemies) {
         //todo add enemy speed to create enemy
         
@@ -611,14 +611,14 @@ function addHearts(count=5) {
 
 function doTick(even=false) {
 
-  if (!alive) { // the only place where ticks stop happening
+  if ( ALIVE) { // the only place where ticks stop happening
     removeAllSprites();
     displayDeathPopup();
     return
   }
 
-  if (!document.hasFocus() || isPaused) {
-    if (!isPaused) {
+  if (!document.hasFocus() || IS_PAUSED) {
+    if (!IS_PAUSED) {
       pause();
     }
     setTimeout(doTick, 27);
@@ -659,7 +659,7 @@ function doTick(even=false) {
 
 function pause() {
   map.removeEventListener('click', clickFunc);
-  isPaused = true;
+  IS_PAUSED = true;
   keys = [];
   
   let pauseContainer = document.querySelector(".pause-container");
@@ -667,7 +667,7 @@ function pause() {
 }
 
 function unpause() {
-  isPaused = false;
+  IS_PAUSED = false;
   let pauseContainer = document.querySelector(".pause-container");
   pauseContainer.style.display = "none";
   map.addEventListener('click', clickFunc);
@@ -684,11 +684,11 @@ window.addEventListener('keyup',
   function(e){ keys[e.key] = false; }, false);
 
 function clickFunc(e) {
-  if (!isPaused) { useSpear(e) }
+  if (!IS_PAUSED) { useSpear(e) }
 }
 
 function overwriteRightClick(event) {
-  if (isPaused) {
+  if (IS_PAUSED) {
     event.preventDefault(); // Prevent the default right-click behavior
     return false;
   }
@@ -702,24 +702,21 @@ function overwriteRightClick(event) {
 
 //* LETS
 
-const roundNumberDiv = document.getElementById("roundNumber");
+const ROUND_NUMBER_DIV = document.getElementById("roundNumber");
 let ROUND_NUMBER = 1;
-roundNumberDiv.innerHTML = ROUND_NUMBER;
-
-const TILE_SIZE = 36;
+ROUND_NUMBER_DIV.innerHTML = ROUND_NUMBER;
 
 // below need to be -1 initially, will be treated as a const once fetched
 let MAP_HEIGHT = -1; 
 let MAP_WIDTH = -1
 
-let weaponInUse = false;
-let isPaused = false;
-let alive = true;
-let cells = null;
+const TILE_SIZE = 36; // in pixels
+
+let WEAPON_IN_USE = false;
+let IS_PAUSED = false;
+let ALIVE = true;
 let INITIAL_SEED = 8;
 let SEED_STATE = null;
-
-let mapgen_uri = `/api/map_generation?seed=${INITIAL_SEED}`;
 
 //* HTML ELEMENTS
 
