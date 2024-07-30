@@ -28,6 +28,8 @@ pub fn get_response(request_type: &str, uri: &str) -> (String, String, Vec<u8>) 
         (status_line, template_name) = sleep(request_type)
     } else if uri == "/game" {
         (status_line, template_name) = game(request_type)
+    } else if uri == "/sandgame" {
+        (status_line, template_name) = sand_game(request_type)
     } else if uri.starts_with("/static/") {
         (status_line, template_name) = static_file(request_type, uri)
     } else if uri.starts_with("/api/") {
@@ -98,6 +100,13 @@ fn sleep(request_type: &str) -> (String, String) {
 fn game(request_type: &str) -> (String, String) {
     let status_line: String = "HTTP/1.1 200 OK".to_string();
     let template_name: String = "html/game.html".to_string();
+
+    (status_line, template_name)
+}
+
+fn sand_game(request_type: &str) -> (String, String) {
+    let status_line: String = "HTTP/1.1 200 OK".to_string();
+    let template_name: String = "html/game_of_sand.html".to_string();
 
     (status_line, template_name)
 }

@@ -1,0 +1,22 @@
+<!-- 
+    I want to make a game with some tick speed,
+    where you can summon a sand that will fall every Ts
+-->
+<html>
+<head>
+    <script defer src="/static/js/sandgame.js"></script>
+</head>
+<body>
+    <div class="content">
+        <canvas 
+            id="sandCanvas" 
+            width="400" 
+            height="400"
+            style="border: solid black 1px;"
+            onmousedown="handleMouseDown(event)"
+            onmouseup="handleMouseUp(event)"
+            onmousemove="handleMouseMove(event)"
+        ></canvas>
+    </div>
+</body>
+</html>

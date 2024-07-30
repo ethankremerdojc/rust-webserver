@@ -105,6 +105,9 @@ function initializeImages() {
   let spearImage = document.createElement("img");
   spearImage.src = "/static/images/png/spear.png";
   imageCacheDiv.appendChild(spearImage);
+  let heartImage = document.createElement("img");
+  heartImage.src = "/static/images/png/heart.png";
+  imageCacheDiv.appendChild(heartImage);
 }
 
 function initializeEnemyImages(imageCacheDiv) {
@@ -333,6 +336,9 @@ function movePlayer(even){
 
 function moveEnemy(enemy, even){ // returns bool moving
   // when enemy has been hit, just don't move until iframes gone
+
+  //todo deal with enemies glitching back and forth because if the speed is not a multiple of player speed then it will overshoot continuially
+
   if (enemy.classList.contains("hit")) { return } 
 
   const player = document.getElementById("player");
@@ -549,7 +555,6 @@ function incrementRound() {
   });
 }
 
-
 function startGame() {
 
   ROUND_NUMBER = 1
@@ -707,6 +712,13 @@ function overwriteRightClick(event) {
   }
 }
 
+function getAnchor() {
+  var currentUrl = document.URL,
+  urlParts   = currentUrl.split('#');
+  
+  return (urlParts.length > 1) ? urlParts[1] : null;
+}
+
 //* LETS
 
 const ROUND_NUMBER_DIV = document.getElementById("roundNumber");
@@ -723,7 +735,15 @@ let WEAPON_IN_USE = false;
 let IS_PAUSED = false;
 let ALIVE = true;
 
-let INITIAL_SEED = 841;
+let anchor = getAnchor();
+let INITIAL_SEED;
+if (anchor) {
+  INITIAL_SEED = Number(anchor);
+} else {
+  INITIAL_SEED = 1;
+}
+
+console.log(INITIAL_SEED)
 
 let SEED_STATE = null;
 
